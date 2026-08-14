@@ -1,0 +1,1798 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0b0b0f">
+<title>Fahad's Daily Food Log</title>
+<style>
+  :root{
+    --bg:#111114; --card:#1a1a1e; --card2:#202026; --line:#2a2a30;
+    --txt:#f4f4f6; --muted:#8a8a92; --accent:#d4af7a; --accent2:#c8a06a;
+    --p:#7fb2ff; --c:#e6b45a; --f:#e88fa0; --cal:#d4af7a; --ok:#7ad19a; --over:#e26d6d;
+    --ringtrack:#26262c;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Cairo",Tahoma,sans-serif;
+    padding:env(safe-area-inset-top) 12px calc(env(safe-area-inset-bottom) + 96px);}
+  .hero{display:flex;justify-content:space-between;align-items:center;padding:16px 4px 14px;}
+  .hgreet{font-size:12px;color:var(--muted);}
+  .hname{font-size:20px;font-weight:800;}
+  .havatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#d4af7a,#8a6a3a);
+    display:flex;align-items:center;justify-content:center;font-weight:800;color:#111;font-size:16px;}
+  .bottomnav{position:fixed;bottom:0;left:0;right:0;z-index:120;
+    background:rgba(22,22,26,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    border-top:1px solid var(--line);display:flex;justify-content:space-around;
+    padding:8px 8px calc(8px + env(safe-area-inset-bottom));}
+  .bnav{flex:1;background:none;border:none;color:var(--muted);cursor:pointer;font-family:inherit;
+    display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px;}
+  .bnav .bi{font-size:20px;line-height:1;filter:grayscale(.4);opacity:.7;}
+  .bnav .bl{font-size:10px;font-weight:600;}
+  .bnav.on{color:var(--accent);}
+  .bnav.on .bi{filter:none;opacity:1;}
+  h1{font-size:20px;margin:14px 4px 2px;}
+  .sub{color:var(--muted);font-size:12px;margin:0 4px 14px;}
+  .weekcard{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 10px 12px;margin:0 4px 14px;}
+  .weekhead{display:flex;justify-content:space-between;align-items:center;padding:0 6px 10px;}
+  .weekhead #weekTitle{font-size:13px;font-weight:800;}
+  .wkarrow{background:none;border:none;color:var(--txt);font-size:18px;cursor:pointer;font-family:inherit;padding:2px 8px;}
+  .weekstrip{display:flex;justify-content:space-between;}
+  .wday{flex:1;text-align:center;cursor:pointer;}
+  .wday .wdl{font-size:10px;color:var(--muted);}
+  .wday .wdn{width:34px;height:34px;margin:5px auto 0;border-radius:12px;background:var(--card2);
+    display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
+  .wday.today .wdl{color:var(--accent);font-weight:800;}
+  .wday.today .wdn{background:var(--accent);color:#111;font-weight:800;box-shadow:0 0 12px rgba(212,175,122,.4);}
+  .wday .wdot{width:4px;height:4px;border-radius:50%;background:var(--accent);margin:4px auto 0;}
+  .wday .wdot.hide{background:transparent;}
+  .weekacts{display:flex;gap:7px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);}
+  .wkact{flex:1;background:var(--card2);border:1px solid var(--line);color:var(--txt);border-radius:10px;
+    padding:9px 4px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
+  .wkact.danger{color:var(--over);}
+  .btn{background:var(--card2);border:1px solid var(--line);color:var(--txt);
+    border-radius:10px;padding:8px 12px;font-size:13px;font-family:inherit;cursor:pointer;}
+  .btn:active{transform:scale(.97);}
+  .btn.danger{color:#ff6b6b;}
+  .targets{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 16px;margin-bottom:14px;}
+  .ringwrap{display:flex;align-items:center;gap:18px;}
+  .rings{flex-shrink:0;}
+  .rings .rt{fill:none;stroke:var(--ringtrack);stroke-width:8;}
+  .rings .rp{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .5s ease;filter:drop-shadow(0 0 3px rgba(212,175,122,.35));}
+  .targets{background:radial-gradient(circle at 28% 18%, #241c10, var(--card) 62%)!important;}
+  .ringinfo{flex:1;min-width:0;}
+  .rcal .big{font-size:28px;font-weight:800;color:var(--txt);}
+  .rcal .lab{font-size:13px;color:var(--muted);font-weight:600;}
+  .rcalsub{font-size:11px;color:var(--muted);margin-bottom:10px;}
+  .mlegend{display:flex;flex-direction:column;gap:6px;}
+  .mrow{font-size:12.5px;color:var(--txt);display:flex;align-items:center;gap:7px;}
+  .mrow b{font-weight:800;}
+  .mrow .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .meal{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    margin-bottom:12px;overflow:hidden;}
+  .meal-h{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;cursor:pointer;gap:10px;}
+  .mealbar{height:4px;display:flex;background:var(--line);overflow:hidden;}
+  .mealbar>i{display:block;height:100%;transition:flex .3s;}
+  .meal-h .name{font-size:15px;font-weight:600;}
+  .meal-h .sum{font-size:12px;color:var(--muted);}
+  .meal-body{padding:0 12px 12px;}
+  .item{display:flex;justify-content:space-between;align-items:center;gap:8px;
+    padding:9px 6px;border-top:1px solid var(--line);font-size:13px;}
+  .item .nm{flex:1;min-width:0;}
+  .item .nm small{color:var(--muted);font-size:11px;display:block;}
+  .item .kc{color:var(--accent);font-weight:600;white-space:nowrap;}
+  .item .x{color:#ff6b6b;background:none;border:none;font-size:18px;cursor:pointer;padding:0 4px;}
+  .add{width:100%;margin-top:10px;background:var(--card2);border:1px dashed var(--line);
+    color:var(--accent);border-radius:10px;padding:10px;font-size:13px;cursor:pointer;font-family:inherit;}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:130;
+    align-items:flex-end;justify-content:center;}
+  .modal.on{display:flex;}
+  .sheet{background:var(--card);width:100%;max-width:520px;border-radius:20px 20px 0 0;
+    max-height:88vh;display:flex;flex-direction:column;border:1px solid var(--line);}
+  .sheet-h{padding:14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;}
+  .sheet-h h3{margin:0;font-size:16px;}
+  .search{margin:12px 14px;flex-shrink:0;}
+  .search input{width:100%;background:var(--card2);border:1px solid var(--line);color:var(--txt);
+    border-radius:12px;padding:11px 14px;font-size:15px;font-family:inherit;}
+  .tabs{display:flex;gap:8px;padding:4px 14px 12px;overflow-x:auto;flex-shrink:0;
+    border-bottom:1px solid var(--line);-webkit-overflow-scrolling:touch;}
+  .tab{white-space:nowrap;background:var(--card2);border:1px solid var(--line);color:var(--muted);
+    border-radius:99px;padding:9px 16px;font-size:14px;cursor:pointer;font-family:inherit;flex-shrink:0;}
+  .tab.on{background:var(--accent);color:#111;border-color:var(--accent);font-weight:600;}
+  .list{overflow-y:auto;padding:0 10px calc(20px + env(safe-area-inset-bottom));flex:1;min-height:0;-webkit-overflow-scrolling:touch;}
+  .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:4px 2px 8px;}
+  .fcell{position:relative;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:14px 10px 11px;text-align:center;cursor:pointer;}
+  .fcell:active{transform:scale(.97);border-color:var(--accent);}
+  .fcell .femoji{font-size:26px;line-height:1;margin-bottom:6px;}
+  .fcell .ftitle{font-size:12.5px;font-weight:700;line-height:1.25;}
+  .fcell .fsub{font-size:10px;color:var(--muted);margin-top:3px;}
+  .fcell .fav{position:absolute;top:6px;left:6px;background:none;border:none;font-size:15px;cursor:pointer;padding:2px;line-height:1;}
+  .fcell .fdel{position:absolute;top:6px;right:6px;background:none;border:none;font-size:13px;cursor:pointer;padding:2px;line-height:1;opacity:.7;}
+  .frow{display:flex;justify-content:space-between;align-items:center;padding:11px 8px;
+    border-bottom:1px solid var(--line);cursor:pointer;}
+  .frow:active{background:var(--card2);}
+  .frow .fn{font-size:14px;}
+  .frow .fn small{display:block;color:var(--muted);font-size:11px;}
+  .frow .fk{color:var(--accent);font-size:12px;white-space:nowrap;}
+  .qty{padding:16px 14px calc(16px + env(safe-area-inset-bottom)) 14px;border-top:1px solid var(--line);background:var(--card2);flex-shrink:0;max-height:60vh;overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:0 -6px 20px rgba(0,0,0,.35);}
+  .qty .picked{font-size:14px;margin-bottom:10px;}
+  .qty .picked small{color:var(--muted);}
+  .qrow{display:flex;gap:8px;align-items:center;}
+  .qrow input{flex:1;background:var(--bg);border:1px solid var(--line);color:var(--txt);
+    border-radius:12px;padding:12px;font-size:18px;text-align:center;font-family:inherit;}
+  .qrow .unit{color:var(--muted);font-size:13px;min-width:48px;}
+  .qprev{display:flex;gap:6px;justify-content:space-between;margin:12px 0;font-size:13px;color:var(--muted);flex-wrap:wrap;}
+  .qprev b{color:var(--txt);}
+  .save{width:100%;background:var(--accent);color:#111;border:none;border-radius:12px;
+    padding:16px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;margin-top:14px;
+    position:sticky;bottom:0;box-shadow:0 4px 14px rgba(212,175,110,.35);}
+  .quick{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
+  .quick button{flex:1;background:var(--bg);border:1px solid var(--line);color:var(--muted);
+    border-radius:8px;padding:7px;font-size:12px;cursor:pointer;font-family:inherit;}
+  .footer-note{color:var(--muted);font-size:11px;text-align:center;margin-top:18px;line-height:1.6;}
+  /* Supplements */
+  .supps{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:14px;}
+  .supps-title{font-size:15px;font-weight:600;margin-bottom:6px;}
+  .supp{display:flex;align-items:flex-start;gap:12px;padding:11px 4px;border-top:1px solid var(--line);cursor:pointer;}
+  .supp:first-of-type{border-top:none;}
+  .supp .box{flex-shrink:0;width:26px;height:26px;border-radius:8px;border:2px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:16px;color:#111;background:transparent;margin-top:1px;}
+  .supp.done .box{background:var(--accent);border-color:var(--accent);}
+  .supp .info{flex:1;min-width:0;}
+  .supp .nm{font-size:14px;font-weight:600;}
+  .supp.done .nm{text-decoration:line-through;color:var(--muted);}
+  .supp .dose{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.5;}
+  /* Custom food */
+  .customadd{width:calc(100% - 28px);margin:10px 14px 0;background:var(--accent2);color:#fff;border:none;
+    border-radius:10px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .cform{padding:14px;border-top:1px solid var(--line);background:var(--card2);display:none;}
+  .cform.on{display:block;}
+  .cform input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--txt);
+    border-radius:10px;padding:10px;font-size:14px;font-family:inherit;margin-bottom:8px;}
+  .cform .crow{display:flex;gap:8px;}
+  .cform .crow input{flex:1;}
+  .cform .basis{display:flex;gap:8px;margin:4px 0 10px;}
+  .cform .basis button{flex:1;background:var(--bg);border:1px solid var(--line);color:var(--muted);
+    border-radius:8px;padding:9px;font-size:12.5px;cursor:pointer;font-family:inherit;}
+  .cform .basis button.on{background:var(--accent);color:#111;border-color:var(--accent);font-weight:700;}
+  .cform .crow2{display:flex;gap:8px;}
+  .cform .crow2 button{flex:1;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .cform .save2{background:var(--accent);color:#111;}
+  .cform .cancel2{background:var(--card);color:var(--muted);border:1px solid var(--line);}
+  .frow .del{color:#ff6b6b;background:none;border:none;font-size:15px;cursor:pointer;padding:0 6px;}
+  /* Slot picker popup */
+  #slotPick{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:150;}
+  #slotPick.on{display:flex;}
+  #slotPick .box{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;width:88%;max-width:360px;}
+  #slotPick h4{margin:0 0 4px;font-size:16px;}
+  #slotPick .hint{color:var(--muted);font-size:12px;margin:0 0 14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  #slotPick .slots{display:flex;flex-direction:column;gap:8px;}
+  #slotPick .slots button{background:var(--card2);border:1px solid var(--line);color:var(--txt);
+    border-radius:12px;padding:13px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;text-align:start;}
+  #slotPick .slots button:active{transform:scale(.98);background:var(--accent);color:#111;}
+  #slotPick .cancel{width:100%;margin-top:12px;background:transparent;border:1px solid var(--line);color:var(--muted);
+    border-radius:12px;padding:11px;font-size:14px;cursor:pointer;font-family:inherit;}
+  /* Stats */
+  .statcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:14px;}
+  .statlbl{font-size:13px;font-weight:700;}
+  .stile{flex:1;background:var(--card2);border-radius:14px;padding:14px;text-align:center;}
+  .sbig{font-size:26px;font-weight:800;color:var(--accent);}
+  .ssub{font-size:11px;color:var(--muted);line-height:1.4;}
+  /* Workout */
+  .wkbar{display:flex;gap:8px;overflow-x:auto;padding:12px 2px 4px;-webkit-overflow-scrolling:touch;}
+  .wkchip{white-space:nowrap;background:var(--card2);border:1px solid var(--line);color:var(--muted);
+    border-radius:99px;padding:9px 15px;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;font-family:inherit;}
+  .wkchip.on{background:var(--accent);color:#111;border-color:var(--accent);}
+  .wkadd{background:var(--accent);color:#111;border:none;border-radius:10px;padding:8px 13px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;}
+  .wkadd-full{width:calc(100% - 8px);margin:2px 4px 24px;background:var(--card2);color:var(--accent);
+    border:1px dashed var(--accent2);border-radius:14px;padding:14px;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit;}
+  .wkweekmeta{display:flex;gap:8px;align-items:center;margin-top:8px;}
+  .wkmini{background:none;border:none;color:var(--muted);font-size:15px;cursor:pointer;padding:2px 4px;}
+  .daycard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:0 4px 14px;}
+  .dayhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .dayhead .dn{font-size:16px;font-weight:800;}
+  .excard{background:var(--card2);border:1px solid var(--line);border-radius:13px;padding:12px;margin-top:10px;}
+  .exhead{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+  .exname{font-size:14.5px;font-weight:700;line-height:1.3;}
+  .extgt{font-size:11px;color:var(--muted);margin-top:2px;cursor:pointer;}
+  .extgt u{color:var(--accent2);}
+  .prbadge{background:linear-gradient(135deg,#2a2113,#1c1710);border:1px solid var(--accent2);
+    color:var(--accent);font-size:11px;font-weight:800;padding:5px 9px;border-radius:9px;white-space:nowrap;}
+  .setrow{display:flex;align-items:center;gap:8px;margin-top:8px;}
+  .setrow .sidx{font-size:11px;color:var(--muted);min-width:38px;}
+  .setrow input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--txt);
+    border-radius:9px;padding:9px;font-size:15px;text-align:center;font-family:inherit;}
+  .setrow .u{font-size:11px;color:var(--muted);min-width:26px;}
+  .setrow .srm{background:none;border:none;color:var(--over);font-size:15px;cursor:pointer;padding:2px 4px;}
+  .exact{display:flex;gap:10px;margin-top:10px;}
+  .exact button{background:none;border:none;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;padding:2px;}
+  .exact .exdel{color:var(--over);}
+  .wkempty{text-align:center;color:var(--muted);font-size:14px;padding:30px 16px;line-height:1.7;}
+  .wkdtabs{display:flex;gap:8px;overflow-x:auto;padding:10px 4px 2px;-webkit-overflow-scrolling:touch;}
+  .wkdtabs::-webkit-scrollbar{display:none;}
+  .wkdtab{white-space:nowrap;background:var(--card2);border:1px solid var(--line);color:var(--muted);
+    border-radius:99px;padding:8px 16px;font-size:13.5px;font-weight:700;cursor:pointer;flex-shrink:0;font-family:inherit;}
+  .wkdtab.on{background:var(--accent);color:#111;border-color:var(--accent);}
+  #wkDays{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;}
+  #wkDays::-webkit-scrollbar{display:none;}
+  .daypage{min-width:100%;box-sizing:border-box;scroll-snap-align:start;}
+  .stbars{display:flex;align-items:flex-end;gap:7px;height:90px;margin-top:12px;}
+  .stbars .b{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;}
+  .stbars .b i{width:100%;border-radius:5px 5px 0 0;display:block;}
+  .stbars .b span{font-size:9px;color:var(--muted);margin-top:5px;}
+  /* View tabs */
+  .viewtabs{display:flex;gap:8px;margin:4px 4px 14px;}
+  .viewtab{flex:1;background:var(--card2);border:1px solid var(--line);color:var(--muted);
+    border-radius:12px;padding:11px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
+  .viewtab.on{background:var(--accent);color:#111;border-color:var(--accent);}
+  /* Plan view */
+  .plan-intro{color:var(--muted);font-size:12px;margin:0 4px 14px;line-height:1.6;}
+  .planpick{display:flex;gap:8px;overflow-x:auto;margin:0 4px 14px;-webkit-overflow-scrolling:touch;}
+  .planbtn{white-space:nowrap;background:var(--card2);border:1px solid var(--line);color:var(--muted);
+    border-radius:99px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;flex-shrink:0;}
+  .planbtn.on{background:var(--accent2);color:#fff;border-color:var(--accent2);}
+  .plandesc{color:var(--accent2);font-size:12px;margin:0 4px 14px;line-height:1.6;}
+  .selbar{display:flex;gap:8px;margin:0 4px 12px;}
+  .selbtn{background:var(--card2);border:1px solid var(--line);color:var(--txt);border-radius:10px;
+    padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .selbtn.primary{background:var(--accent);color:#111;border-color:var(--accent);}
+  .pcell.left.selectable{cursor:pointer;}
+  .selchk{display:inline-flex;width:20px;height:20px;border-radius:6px;border:2px solid var(--line);
+    align-items:center;justify-content:center;font-size:13px;color:#111;margin-bottom:6px;}
+  .pcell.left.sel .selchk{background:var(--accent);border-color:var(--accent);}
+  .pcell.left.sel{background:rgba(212,175,122,.08);}
+  .pmeal{background:var(--card);border:1px solid var(--line);border-radius:16px;margin-bottom:14px;overflow:hidden;}
+  .pmeal-h{padding:11px 14px;background:var(--card2);border-bottom:1px solid var(--line);}
+  .pmeal-h .name{font-size:15px;font-weight:600;}
+  .pmeal-h .mac{font-size:11px;color:var(--muted);margin-top:3px;}
+  .ptbl{width:100%;}
+  .ptbl-head{display:grid;grid-template-columns:1fr 1fr;background:var(--card2);border-bottom:1px solid var(--line);}
+  .ptbl-head div{padding:8px 10px;font-size:11px;font-weight:700;color:var(--muted);}
+  .ptbl-head div:first-child{border-inline-end:1px solid var(--line);}
+  .prow{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line);}
+  .prow:first-of-type{border-top:none;}
+  .pcell{padding:10px;min-width:0;}
+  .pcell.left{border-inline-end:1px solid var(--line);}
+  .pcell .fn{font-size:13px;font-weight:600;}
+  .pcell .fn small{display:block;color:var(--muted);font-size:10.5px;font-weight:400;margin-top:2px;}
+  .pcell .kc{color:var(--accent);font-size:11px;font-weight:600;margin-top:3px;}
+  .pcell select{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--txt);
+    border-radius:8px;padding:7px;font-size:12.5px;font-family:inherit;margin-bottom:6px;}
+  .pcell .altinfo{font-size:10.5px;color:var(--muted);line-height:1.5;}
+  .pcell .altinfo .ac{color:var(--accent);font-weight:600;}
+  .plan-foot{background:var(--card2);border:1px solid var(--line);
+    border-radius:16px;padding:14px;margin-bottom:14px;text-align:center;}
+  .plan-foot .big{font-size:22px;font-weight:700;color:var(--accent);}
+  .plan-foot .lab{font-size:12px;color:var(--muted);margin-top:4px;}
+  .addbtn{margin-top:6px;background:var(--accent);color:#111;border:none;border-radius:8px;
+    padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .addbtn:active{transform:scale(.96);}
+  .addbtn.flash{background:var(--ok);color:#fff;}
+</style>
+</head>
+<body>
+  <div class="hero">
+    <div>
+      <div class="hgreet" id="hgreet">Welcome 👋</div>
+      <div class="hname">Fahad</div>
+    </div>
+    <div class="havatar">F</div>
+  </div>
+
+  <div class="weekcard">
+    <div class="weekhead">
+      <button class="wkarrow" id="weekPrev">‹</button>
+      <div id="weekTitle">—</div>
+      <button class="wkarrow" id="weekNext">›</button>
+    </div>
+    <div class="weekstrip" id="weekStrip"></div>
+    <div class="weekacts">
+      <button class="wkact" id="todayBtn">📅 Today</button>
+      <button class="wkact danger" id="clearDay">🗑️ Clear</button>
+    </div>
+  </div>
+
+  <div id="logView">
+  <div class="targets">
+    <div class="ringwrap">
+      <svg class="rings" viewBox="0 0 132 132" width="132" height="132">
+        <circle class="rt" cx="66" cy="66" r="58"/>
+        <circle id="ringCal" class="rp" cx="66" cy="66" r="58" stroke="var(--cal)" transform="rotate(-90 66 66)"/>
+        <circle class="rt" cx="66" cy="66" r="45"/>
+        <circle id="ringP" class="rp" cx="66" cy="66" r="45" stroke="var(--p)" transform="rotate(-90 66 66)"/>
+        <circle class="rt" cx="66" cy="66" r="32"/>
+        <circle id="ringC" class="rp" cx="66" cy="66" r="32" stroke="var(--c)" transform="rotate(-90 66 66)"/>
+        <circle class="rt" cx="66" cy="66" r="19"/>
+        <circle id="ringF" class="rp" cx="66" cy="66" r="19" stroke="var(--f)" transform="rotate(-90 66 66)"/>
+      </svg>
+      <div class="ringinfo">
+        <div class="rcal"><span class="big" id="calNow">0</span><span class="lab"> / <span id="calTgt">2400</span></span></div>
+        <div class="rcalsub" id="calLeft">kcal</div>
+        <div class="mlegend">
+          <div class="mrow"><span class="dot" style="background:var(--p)"></span>Protein <b id="pNow">0</b>/<span id="pTgt">210</span>g</div>
+          <div class="mrow"><span class="dot" style="background:var(--c)"></span>Carb <b id="cNow">0</b>/<span id="cTgt">230</span>g</div>
+          <div class="mrow"><span class="dot" style="background:var(--f)"></span>Fat <b id="fNow">0</b>/<span id="fTgt">70</span>g</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="meals"></div>
+  </div><!-- /logView -->
+
+  <div id="planView" style="display:none;">
+    <p class="plan-intro">Pick a plan below. Left column = the fixed plan. Right column = swaps with about the same key macro — pick one if you want a change.<br>
+    Main meals also have an "If eating out" option, and there's a full restaurant guide at the bottom.<br>
+    <span style="color:var(--accent2)">This tab is for reading — once you decide, tap ＋ Add to log it.</span></p>
+    <div class="planpick" id="planPick"></div>
+    <div class="plandesc" id="planDesc"></div>
+    <div class="selbar">
+      <button id="selToggle" class="selbtn">☑️ Select multiple</button>
+      <button id="selAdd" class="selbtn primary" style="display:none;">＋ Add (0)</button>
+      <button id="selCancel" class="selbtn" style="display:none;">Cancel</button>
+    </div>
+    <div id="planMeals"></div>
+    <div id="eatingOut"></div>
+  </div>
+
+  <div id="statsView" style="display:none;">
+    <div class="statcard">
+      <div class="statlbl">🔥 Streak</div>
+      <div style="display:flex;gap:10px;margin-top:8px;">
+        <div class="stile"><div class="sbig" id="stStreak">0</div><div class="ssub">days in a row<br>hitting protein</div></div>
+        <div class="stile"><div class="sbig" id="stBest">0</div><div class="ssub">best<br>streak 🏆</div></div>
+      </div>
+    </div>
+    <div class="statcard">
+      <div class="statlbl">📊 Last 7 days · calories</div>
+      <div id="stBars" class="stbars"></div>
+      <div class="ssub" id="stAvg" style="margin-top:8px;"></div>
+    </div>
+    <div class="statcard">
+      <div class="statlbl">🏋️ Workout</div>
+      <div id="woStats"></div>
+    </div>
+    <div class="statcard">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="statlbl">⚖️ Weight</div>
+        <button id="wtGear" style="background:none;border:none;color:var(--muted);font-size:15px;cursor:pointer;">⚙️</button>
+      </div>
+      <div id="wtSettings" style="display:none;gap:8px;margin-top:10px;">
+        <input type="number" id="wtHeight" inputmode="decimal" placeholder="Height (cm)" style="flex:1;background:var(--bg);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:9px;font-size:13px;font-family:inherit;">
+        <input type="number" id="wtGoal" inputmode="decimal" step="0.1" placeholder="Goal (kg)" style="flex:1;background:var(--bg);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:9px;font-size:13px;font-family:inherit;">
+        <button id="wtMetaSave" style="background:var(--accent);color:#111;border:none;border-radius:10px;padding:9px 14px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;">Save</button>
+      </div>
+      <div id="wtBody"></div>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <input type="number" id="wtInput" inputmode="decimal" step="0.1" placeholder="Today's weight (kg)" style="flex:1;background:var(--bg);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:10px;font-size:14px;font-family:inherit;">
+        <button id="wtSave" style="background:var(--accent);color:#111;border:none;border-radius:10px;padding:10px 16px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;">Log</button>
+      </div>
+      <div id="wtHist"></div>
+    </div>
+  </div>
+
+  <div id="moreView" style="display:none;">
+    <div class="statcard">
+      <div class="statlbl">💊 Supplements</div>
+      <div id="suppsList" style="margin-top:6px;"></div>
+    </div>
+    <div class="statcard">
+      <div class="statlbl">⚙️ Info</div>
+      <div class="ssub" style="margin-top:8px;line-height:1.7;">
+        Your log saves automatically on this device.<br>
+        Add to iPhone: Share ⬆️ → "Add to Home Screen".<br>
+        Add custom foods from the ＋ picker under "🍴 My Foods".
+      </div>
+    </div>
+  </div>
+
+  <div id="workoutView" style="display:none;">
+    <div class="statcard">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="statlbl">💪 Workout</div>
+        <button id="wkNewWeek" class="wkadd">＋ New week</button>
+      </div>
+      <div id="wkWeekBar" class="wkbar"></div>
+      <div id="wkWeekMeta" class="wkweekmeta"></div>
+    </div>
+    <div id="wkDayTabs" class="wkdtabs"></div>
+    <div id="wkDays"></div>
+    <button id="wkAddDay" class="wkadd-full" style="display:none;">＋ Add day</button>
+  </div>
+
+  <p class="footer-note">
+    Your log saves automatically on this device/browser.<br>
+    To add it as an app on iPhone: Share ⬆️ → "Add to Home Screen".
+  </p>
+
+  <nav class="bottomnav">
+    <button class="bnav on" id="tabLog"><span class="bi">🏠</span><span class="bl">Home</span></button>
+    <button class="bnav" id="tabPlan"><span class="bi">🍽️</span><span class="bl">Plan</span></button>
+    <button class="bnav" id="tabWorkout"><span class="bi">💪</span><span class="bl">Workout</span></button>
+    <button class="bnav" id="tabStats"><span class="bi">📊</span><span class="bl">Stats</span></button>
+    <button class="bnav" id="tabMore"><span class="bi">💊</span><span class="bl">More</span></button>
+  </nav>
+
+  <div id="slotPick">
+    <div class="box">
+      <h4>Add to which meal?</h4>
+      <p class="hint" id="slotHint"></p>
+      <div class="slots" id="slotBtns"></div>
+      <button class="cancel" id="slotCancel">Cancel</button>
+    </div>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="sheet">
+      <div class="sheet-h">
+        <h3 id="sheetTitle">Choose a food</h3>
+        <button class="btn" id="closeModal">Close ✕</button>
+      </div>
+      <div class="search"><input type="text" id="searchBox" placeholder="Search food…"></div>
+      <button class="customadd" id="customAddBtn">＋ Custom food</button>
+      <div class="cform" id="cform">
+        <input type="text" id="cfName" placeholder="Name (e.g. My protein shake)">
+        <div class="crow">
+          <input type="number" id="cfCal" inputmode="decimal" placeholder="Calories">
+          <input type="number" id="cfP" inputmode="decimal" placeholder="Protein g">
+        </div>
+        <div class="crow">
+          <input type="number" id="cfC" inputmode="decimal" placeholder="Carb g">
+          <input type="number" id="cfF" inputmode="decimal" placeholder="Fat g">
+        </div>
+        <div class="basis">
+          <button id="cfWhole" class="on">Whole item / serving</button>
+          <button id="cfPerAmt">Per amount (g)</button>
+        </div>
+        <input type="number" id="cfAmt" inputmode="decimal" placeholder="…the macros above are for this many grams (e.g. 100)" style="display:none;">
+        <div class="crow2">
+          <button class="cancel2" id="cfCancel">Cancel</button>
+          <button class="save2" id="cfSave">Save food</button>
+        </div>
+      </div>
+      <div class="tabs" id="catTabs"></div>
+      <div class="list" id="foodList"></div>
+      <div class="qty" id="qtyPane" style="display:none;">
+        <div class="picked" id="pickedName"></div>
+        <div class="qrow">
+          <input type="number" id="qtyInput" inputmode="decimal" min="0" step="any" value="100">
+          <span class="unit" id="qtyUnit">g</span>
+        </div>
+        <div class="quick" id="quickBtns"></div>
+        <div class="qprev" id="qtyPreview"></div>
+        <button class="save" id="saveItem">Add to meal ✓</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* Fahad's app — uses UNIQUE keys suffixed _fahad so it never mixes with
+   sibling apps (Abdullah, Sama, Mishari) on the same GitHub Pages domain. Fresh install. */
+const INGREDIENTS = [
+{cat:"بروتين",name:"بيض",unit:"حبة",protein:5.625,carb:0.45,fat:4.5,cal:64.8},
+{cat:"بروتين",name:"بياض البيض",unit:"g",protein:0.11,carb:0.01,fat:0,cal:0.5},
+{cat:"بروتين",name:"كبدة بقري",unit:"g",protein:0.2,carb:0.03,fat:0.04,cal:1.3},
+{cat:"بروتين",name:"صدر تركي",unit:"g",protein:0.17,carb:0.01,fat:0.05,cal:1.2},
+{cat:"بروتين",name:"دجاج",unit:"g",protein:0.31,carb:0,fat:0.036,cal:1.65},
+{cat:"بروتين",name:"لحم بقري (10% دهون)",unit:"g",protein:0.26,carb:0,fat:0.1,cal:2.17},
+{cat:"بروتين",name:"سمك مطبوخ",unit:"g",protein:0.22,carb:0,fat:0.012,cal:1.0},
+{cat:"بروتين",name:"تونة بالماء",unit:"g",protein:0.26,carb:0,fat:0.008,cal:1.16},
+{cat:"بروتين",name:"سالمون مطبوخ",unit:"g",protein:0.22,carb:0,fat:0.13,cal:2.08},
+{cat:"بروتين",name:"جمبري مطبوخ",unit:"g",protein:0.24,carb:0,fat:0.003,cal:0.99},
+{cat:"بروتين",name:"زبادي يوناني خالي الدسم",unit:"g",protein:0.1,carb:0.03,fat:0.003,cal:0.55},
+{cat:"بروتين",name:"جبنة قريش",unit:"g",protein:0.11,carb:0.01,fat:0.04,cal:0.84},
+{cat:"بروتين",name:"جبنة قشقوان قليلة الدسم",unit:"g",protein:0.25,carb:0.01,fat:0.21,cal:2.93},
+{cat:"بروتين",name:"واي بروتين كونسينتريت",unit:"g",protein:0.8,carb:0.1,fat:0.05,cal:4.1},
+{cat:"بروتين",name:"واي بروتين أيزوليت",unit:"g",protein:0.9,carb:0.02,fat:0.01,cal:3.8},
+{cat:"بروتين",name:"حليب قليل الدسم",unit:"ml",protein:0.033,carb:0.05,fat:0.03,cal:0.6},
+{cat:"بروتين",name:"حليب كامل الدسم",unit:"ml",protein:0.032,carb:0.05,fat:0.04,cal:0.69},
+{cat:"بروتين",name:"حليب ندى سادة",unit:"ml",protein:0.09,carb:0.09,fat:0.03,cal:0.99},
+{cat:"كارب",name:"شوفان",unit:"g",protein:0.13,carb:0.67,fat:0.07,cal:3.83},
+{cat:"كارب",name:"رز أبيض مطبوخ",unit:"g",protein:0.025,carb:0.28,fat:0.003,cal:1.25},
+{cat:"كارب",name:"رز بني مطبوخ",unit:"g",protein:0.025,carb:0.23,fat:0.01,cal:1.11},
+{cat:"كارب",name:"بطاطس مطبوخة",unit:"g",protein:0.02,carb:0.2,fat:0.004,cal:0.92},
+{cat:"كارب",name:"بطاطا حلوة مطبوخة",unit:"g",protein:0.02,carb:0.21,fat:0.005,cal:0.97},
+{cat:"كارب",name:"مكرونة مطبوخة",unit:"g",protein:0.05,carb:0.26,fat:0.01,cal:1.33},
+{cat:"كارب",name:"توست نخالة",unit:"حبة",protein:2.4,carb:13.8,fat:0.9,cal:72.9},
+{cat:"كارب",name:"كورن فليكس",unit:"g",protein:0.07,carb:0.84,fat:0.01,cal:3.73},
+{cat:"فواكه",name:"فواكه (موز، تفاح، برتقال)",unit:"g",protein:0.005,carb:0.15,fat:0.002,cal:0.64},
+{cat:"كارب",name:"فشار بدون زيت",unit:"g",protein:0.1,carb:0.64,fat:0.03,cal:3.23},
+{cat:"كارب",name:"سيريلاك القمح",unit:"g",protein:0.07,carb:0.78,fat:0.02,cal:3.58},
+{cat:"فواكه",name:"تمر",unit:"g",protein:0.02,carb:0.75,fat:0.01,cal:3.2},
+{cat:"خضار",name:"خضراوات",unit:"g",protein:0.014,carb:0.051,fat:0.002,cal:0.28},
+{cat:"كارب",name:"تورتيلا",unit:"g",protein:0.08,carb:0.49,fat:0.09,cal:3.09},
+{cat:"كارب",name:"صوص",unit:"g",protein:0.05,carb:0.15,fat:0.2,cal:2.6},
+{cat:"كارب",name:"دارك تشوكلت",unit:"g",protein:0.06,carb:0.06,fat:0.32,cal:3.36},
+{cat:"كارب",name:"صامولي",unit:"g",protein:0.09,carb:0.36,fat:0.054,cal:2.29},
+{cat:"كارب",name:"خبز اسمر",unit:"g",protein:0.034,carb:0.41,fat:0.34,cal:4.8},
+{cat:"كارب",name:"عسل",unit:"g",protein:0.003,carb:0.8,fat:0,cal:3.21},
+{cat:"كارب",name:"خبز البرجر",unit:"g",protein:0.07,carb:0.5,fat:0.04,cal:2.64},
+{cat:"كارب",name:"البان كيك",unit:"g",protein:0.07,carb:0.4,fat:0.08,cal:2.6},
+{cat:"كارب",name:"لبن ابو قوس لايت",unit:"g",protein:0.04,carb:0.12,fat:0.06,cal:1.18},
+{cat:"دهون",name:"زبدة الفول السوداني (بيور)",unit:"g",protein:0.25,carb:0.2,fat:0.5,cal:6.3},
+{cat:"دهون",name:"مكسرات",unit:"g",protein:0.18,carb:0.3,fat:0.46,cal:6.06},
+{cat:"دهون",name:"زيت زيتون",unit:"g",protein:0,carb:0,fat:1,cal:9},
+{cat:"دهون",name:"جبنة حلوم",unit:"g",protein:0.075,carb:0.002,fat:0.26,cal:2.65},
+{cat:"دهون",name:"كريمه الطبخ",unit:"g",protein:0.02,carb:0.03,fat:0.36,cal:3.4},
+{cat:"دهون",name:"لبنه تركيه",unit:"g",protein:0.06,carb:0.04,fat:0.09,cal:1.21},
+{cat:"دهون",name:"جبنه فلادلفيا",unit:"g",protein:0.06,carb:0.05,fat:0.33,cal:3.41},
+{cat:"دهون",name:"زبدة الفول السوداني (Butter)",unit:"g",protein:0.009,carb:0.001,fat:0.51,cal:4.63},
+{cat:"دهون",name:"شرايح الجبنة",unit:"g",protein:0.24,carb:0.02,fat:0.33,cal:4.01},
+{cat:"دهون",name:"جبنة فيتا",unit:"g",protein:0.19,carb:0.05,fat:0.19,cal:2.67},
+{cat:"دهون",name:"حليب اللوز",unit:"g",protein:0.004,carb:0.006,fat:0.012,cal:0.148}
+];
+/* ---------- CUSTOM FOODS (user-added, saved under customfoods_fahad) ---------- */
+function loadCustom(){try{return JSON.parse(localStorage.getItem("customfoods_fahad")||"[]");}catch(e){return [];}}
+function saveCustom(){localStorage.setItem("customfoods_fahad",JSON.stringify(CUSTOM));}
+let CUSTOM = loadCustom();
+const MEALS = [
+{brand:"برجرايزر",item:"كلاسيك برجر تشكن مشوي",cal:495,protein:38,carb:55,fat:13},
+{brand:"برجرايزر",item:"برجر ميلتايززر لحم",cal:514,protein:30,carb:37,fat:27},
+{brand:"برجرايزر",item:"برجر ميلتايززر لحم دبل",cal:652,protein:42,carb:37,fat:36},
+{brand:"برجرايزر",item:"كلاسيك برجر تشكن مشوي دبل",cal:631,protein:68,carb:55,fat:15},
+{brand:"برجرايزر",item:"برجر ميلتايززر دجاج",cal:469,protein:25,carb:40,fat:23},
+{brand:"برجرايزر",item:"كلاسيك برجر لحم",cal:632,protein:34,carb:55,fat:32},
+{brand:"برجرايزر",item:"كلاسيك برجر لحم دبل",cal:844,protein:52,carb:55,fat:47},
+{brand:"برجرايزر",item:"صوص",cal:95,protein:0,carb:9,fat:6},
+{brand:"برجرايزر",item:"شريحة جبن اضافية",cal:48,protein:2,carb:1,fat:4},
+{brand:"برجرايزر",item:"بطاطس مقلية - كبير",cal:479,protein:7,carb:54,fat:24},
+{brand:"هارديز",item:"ساندوتش مشروم اند سويس",cal:680,protein:36,carb:53,fat:38},
+{brand:"هارديز",item:"ساندوتش دجاج فيليه",cal:710,protein:35,carb:64,fat:36},
+{brand:"هارديز",item:"ساندوتش سنتافي حار",cal:655,protein:32,carb:53,fat:35},
+{brand:"هارديز",item:"بطاطس حجم وسط",cal:490,protein:5,carb:63,fat:24},
+{brand:"ليتل سيزرز",item:"بيتزا خضار",cal:270,protein:13,carb:33,fat:10},
+{brand:"ليتل سيزرز",item:"بيتزا دجاج سوبريم",cal:310,protein:14,carb:33,fat:15},
+{brand:"ليتل سيزرز",item:"الفريدو الدجاج",cal:1450,protein:67,carb:154,fat:61},
+{brand:"ليتل سيزرز",item:"بيتزا بيبيروني",cal:330,protein:14,carb:28,fat:18},
+{brand:"ليتل سيزرز",item:"لازانيا",cal:1170,protein:72,carb:79,fat:62},
+{brand:"ليتل سيزرز",item:"خبز الجبنة الايطالية",cal:150,protein:6,carb:13,fat:8},
+{brand:"ليتل سيزرز",item:"رانش صوص",cal:250,protein:0,carb:3,fat:26},
+{brand:"ليتل سيزرز",item:"بطاطس ويدجز مشوية",cal:279,protein:4,carb:41,fat:11},
+{brand:"تشارليز فيلي ستيك",item:"ساندوتش دجاج كاليفورنيا 6 انش",cal:490,protein:32,carb:38,fat:25},
+{brand:"تشارليز فيلي ستيك",item:"ساندوتش فيلي تشيزستيك 6 انش",cal:470,protein:27,carb:39,fat:22},
+{brand:"تشارليز فيلي ستيك",item:"ساندوتش بيبروني ستيك 6 انش",cal:560,protein:33,carb:39,fat:30},
+{brand:"تشارليز فيلي ستيك",item:"هلابينو تشيز ستيك 6 انش",cal:460,protein:29,carb:39,fat:21},
+{brand:"تشارليز فيلي ستيك",item:"التمت كلوب",cal:500,protein:32,carb:42,fat:23},
+{brand:"تشارليز فيلي ستيك",item:"ديلي ديلوكس الايطالية 6 انش",cal:510,protein:28,carb:40,fat:27},
+{brand:"تشارليز فيلي ستيك",item:"فيجي ديلايت 6 انش",cal:390,protein:19,carb:48,fat:14},
+{brand:"تشارليز فيلي ستيك",item:"ساندوتش دجاج بوفالو 6 انش",cal:450,protein:32,carb:41,fat:18},
+{brand:"تشارليز فيلي ستيك",item:"ساندوتش دجاج ترياكي",cal:440,protein:33,carb:41,fat:17},
+{brand:"تشارليز فيلي ستيك",item:"ساندوتش فيلي دجاج 6 انش",cal:370,protein:32,carb:37,fat:11},
+{brand:"تشارليز فيلي ستيك",item:"تركي شيدر ملت 6 انش",cal:480,protein:33,carb:42,fat:20},
+{brand:"تشارليز فيلي ستيك",item:"بطاطا وجبة اساسيةة",cal:400,protein:5,carb:46,fat:22},
+{brand:"تشارليز فيلي ستيك",item:"التيميت فرايز",cal:790,protein:15,carb:61,fat:54},
+{brand:"بيتزاراتي",item:"بيتزا مارجريتا",cal:1060,protein:30,carb:118,fat:52},
+{brand:"بيتزاراتي",item:"بيتزاراتي",cal:950,protein:30,carb:98,fat:45},
+{brand:"بيتزاراتي",item:"بولو بيكانتي",cal:920,protein:30,carb:98,fat:45},
+{brand:"بيتزاراتي",item:"تري فورماجي",cal:870,protein:30,carb:90,fat:43},
+{brand:"بيتزاراتي",item:"بيتزا الروكا",cal:1140,protein:30,carb:118,fat:52},
+{brand:"بيتزاراتي",item:"بيترا الدجاج",cal:1040,protein:30,carb:118,fat:52},
+{brand:"بيتزاراتي",item:"حلقات النوتيلا",cal:1470,protein:31,carb:161,fat:78},
+{brand:"بيتزاراتي",item:"كالزون السبانخ",cal:760,protein:25,carb:78,fat:39},
+{brand:"بيتزاراتي",item:"سلطة الجرجير",cal:165,protein:14,carb:23,fat:2},
+{brand:"بيتزاراتي",item:"هوت دوج رول",cal:690,protein:25,carb:78,fat:39},
+{brand:"ماكدونالدز",item:"ماك تشيكن",cal:420,protein:16,carb:47,fat:18},
+{brand:"ماكدونالدز",item:"بيج ماك",cal:524,protein:24,carb:48,fat:25},
+{brand:"ماكدونالدز",item:"ماك راب تشيكن وجبة اساسية",cal:410,protein:12,carb:31,fat:26},
+{brand:"ماكدونالدز",item:"ماك تشيكن سبايسي",cal:477,protein:19,carb:48,fat:23},
+{brand:"ماكدونالدز",item:"دبل تشيز برجر",cal:462,protein:25,carb:37,fat:23},
+{brand:"ماكدونالدز",item:"جراند تشيكن سبيشال",cal:911,protein:35,carb:73,fat:52},
+{brand:"ماكدونالدز",item:"بيف برجر",cal:264,protein:12,carb:35,fat:8},
+{brand:"ماكدونالدز",item:"جراند تشيكن سبايسي",cal:757,protein:33,carb:66,fat:40},
+{brand:"ماكدونالدز",item:"جراند تشيكن ديلوكس",cal:862,protein:32,carb:76,fat:48},
+{brand:"ماكدونالدز",item:"ماك ارابيا تشيكن",cal:536,protein:27,carb:54,fat:23},
+{brand:"ماكدونالدز",item:"ليتل تايستي دجاج",cal:451,protein:20,carb:45,fat:20},
+{brand:"ماكدونالدز",item:"باربيكيو انجوس",cal:645,protein:32,carb:59,fat:31},
+{brand:"ماكدونالدز",item:"سبايسي كرانشي دجاج",cal:568,protein:30,carb:67,fat:20},
+{brand:"ماكدونالدز",item:"فيجي برجر ديلوكس",cal:431,protein:9,carb:54,fat:20},
+{brand:"ماكدونالدز",item:"بيج تايستي",cal:882,protein:40,carb:57,fat:53},
+{brand:"ماكدونالدز",item:"تشيكر",cal:435,protein:20,carb:38,fat:22},
+{brand:"ماكدونالدز",item:"كوارتر باوندر بالجبن",cal:544,protein:31,carb:39,fat:29},
+{brand:"ماكدونالدز",item:"تشكن برجر",cal:287,protein:11,carb:36,fat:10},
+{brand:"ماكدونالدز",item:"بيف برقر",cal:264,protein:12,carb:33.75,fat:9},
+{brand:"ماكدونالدز",item:"تشيز برجر",cal:328,protein:15,carb:35.5,fat:14},
+{brand:"ماكدونالدز",item:"ماك رويال",cal:576,protein:28,carb:41.75,fat:33},
+{brand:"ماكدونالدز",item:"يج ماك",cal:547,protein:25,carb:48.75,fat:28},
+{brand:"ماكدونالدز",item:"كوارتر باوندر",cal:544,protein:32.425,carb:40.8,fat:27.9},
+{brand:"ماكدونالدز",item:"ماك راب الدجاج الحارة",cal:405,protein:12.05,carb:30.7,fat:26},
+{brand:"ماكدونالدز",item:"ماك راب الدجاج",cal:410,protein:12.325,carb:31,fat:26.3},
+{brand:"ماكدونالدز",item:"تشيكن ماك",cal:547,protein:23.5,carb:57,fat:25},
+{brand:"ماكدونالدز",item:"تشيكن برجر",cal:285,protein:10.5,carb:36,fat:11},
+{brand:"ماكدونالدز",item:"ماك عربي دجاج",cal:537,protein:26.25,carb:54,fat:24},
+{brand:"ماكدونالدز",item:"تشيكن ماك ناجتس",cal:169,protein:10,carb:12,fat:9},
+{brand:"ماكدونالدز",item:"ماك مافن بالبيض",cal:288,protein:17,carb:28,fat:12},
+{brand:"ماكدونالدز",item:"هاش براونز",cal:179,protein:1.5,carb:14,fat:13},
+{brand:"ماكدونالدز",item:"ماك مافن صوصج بالبيض",cal:349,protein:23.25,carb:28,fat:16},
+{brand:"ماكدونالدز",item:"سلطة سيزر بالدجاج",cal:190,protein:27,carb:8,fat:5},
+{brand:"ماكدونالدز",item:"تشيكن ماك ناجتس. (٤ حبات)",cal:155,protein:9,carb:9,fat:9},
+{brand:"ماكدونالدز",item:"شرائح الاناناس",cal:25,protein:0,carb:5,fat:0},
+{brand:"ماكدونالدز",item:"تشيكن ستربس  (٢ حبة)",cal:80,protein:6,carb:5,fat:3},
+{brand:"ماكدونالدز",item:"تشيكن ستربس سبايسي. (٢حبة)",cal:75,protein:5,carb:5,fat:3},
+{brand:"ماكدونالدز",item:"كوكاكولا",cal:150,protein:0,carb:38,fat:0},
+{brand:"ماكدونالدز",item:"كوب عصير برتقال",cal:114,protein:1,carb:28,fat:0},
+{brand:"ماكدونالدز",item:"قطع تفاح",cal:23,protein:0,carb:5,fat:0},
+{brand:"ماكدونالدز",item:"بطاطس وسط",cal:679,protein:10,carb:83,fat:34},
+{brand:"ماكدونالدز",item:"بطاطس كبير",cal:802,protein:12,carb:98,fat:41},
+{brand:"ماكدونالدز",item:"اسبريسو ماكياتو",cal:12,protein:0,carb:2,fat:0},
+{brand:"ماكدونالدز",item:"كوب شراب التفاح",cal:88,protein:0,carb:22,fat:0},
+{brand:"ماكدونالدز",item:"نيو يورك تشيز",cal:394,protein:9,carb:30,fat:27},
+{brand:"ماكدونالدز",item:"كابتشينو",cal:126,protein:7,carb:12,fat:5},
+{brand:"ماكدونالدز",item:"لاتيه",cal:139,protein:8,carb:13,fat:6},
+{brand:"ماكدونالدز",item:"حليب بالفراولة",cal:174,protein:7,carb:26,fat:4},
+{brand:"ماكدونالدز",item:"حليب فانيلا",cal:123,protein:6,carb:9,fat:6},
+{brand:"ماكدونالدز",item:"موكا",cal:89,protein:5,carb:9,fat:3},
+{brand:"ماكدونالدز",item:"شوكولاتة ساخنة",cal:242,protein:6,carb:37,fat:7},
+{brand:"ماكدونالدز",item:"كورواسون بالحبنة",cal:301,protein:8,carb:31,fat:16},
+{brand:"ماكدونالدز",item:"موكا فرابيه",cal:538,protein:11,carb:76,fat:21},
+{brand:"ماكدونالدز",item:"كراميل فرابيه",cal:689,protein:13,carb:81,fat:34},
+{brand:"ماكدونالدز",item:"فانيليا فرابيه",cal:684,protein:13,carb:84,fat:32},
+{brand:"ماكدونالدز",item:"سموثي الفراولة والموز",cal:563,protein:12,carb:48,fat:36},
+{brand:"ماكدونالدز",item:"ايس لاتيه",cal:102,protein:6,carb:11,fat:3},
+{brand:"ماكدونالدز",item:"كيك تورتا نوتشيولا",cal:365,protein:7,carb:46,fat:19},
+{brand:"ماكدونالدز",item:"كيك الشوكولاتة",cal:375,protein:5,carb:46,fat:19},
+{brand:"ماكدونالدز",item:"كيك التيراميسو",cal:300,protein:4,carb:47,fat:10},
+{brand:"ماكدونالدز",item:"عصير جوافة",cal:341,protein:2,carb:80,fat:0},
+{brand:"ماكدونالدز",item:"سبرايت",cal:167,protein:0,carb:42,fat:0},
+{brand:"ماكدونالدز",item:"فانتا",cal:206,protein:0,carb:52,fat:0},
+{brand:"ماكدونالدز",item:"كوكيز دابل تشوكليت",cal:389,protein:4,carb:51,fat:19},
+{brand:"ماكدونالدز",item:"مافن مع نوتيلا",cal:427,protein:6,carb:47,fat:24},
+{brand:"ماكدونالدز",item:"مافن توت ازرق",cal:505,protein:7,carb:56,fat:28},
+{brand:"ماكدونالدز",item:"كورواسون الشوكلاتة",cal:287,protein:6,carb:31,fat:16},
+{brand:"ماكدونالدز",item:"دونات شوكولاتة ومكسرات",cal:359,protein:7,carb:34,fat:22},
+{brand:"ماكدونالدز",item:"دونات توت وكريمة",cal:299,protein:4,carb:32,fat:17},
+{brand:"ماكدونالدز",item:"دونات تريبل تشوكليت",cal:343,protein:4,carb:33,fat:19},
+{brand:"ماكدونالدز",item:"فطيرة التفاح",cal:231,protein:2,carb:27,fat:12},
+{brand:"ماكدونالدز",item:"كورواسون الزعتر",cal:246,protein:5,carb:27,fat:13},
+{brand:"ماكدونالدز",item:"صوص بيج ماك",cal:64,protein:0,carb:0,fat:3},
+{brand:"ماكدونالدز",item:"ماك فلوري كيتكات",cal:437,protein:9,carb:64,fat:16},
+{brand:"ماكدونالدز",item:"ماك فلوري اوريو",cal:399,protein:8,carb:61,fat:13},
+{brand:"ماكدونالدز",item:"موكا مثلج",cal:176,protein:6,carb:29,fat:3},
+{brand:"ماكدونالدز",item:"صوص بيج تايستي",cal:17,protein:0,carb:0,fat:1},
+{brand:"ماكدونالدز",item:"فانيليا اوريو فرابيه",cal:647,protein:13,carb:95,fat:23},
+{brand:"ماكدونالدز",item:"مكياتو بالكراميل كبير",cal:369,protein:11,carb:30,fat:23},
+{brand:"ماكدونالدز",item:"كاراميل ماكياتو مثلج",cal:465,protein:10,carb:31,fat:33},
+{brand:"ماكدونالدز",item:"ايس كريم فانيلا بالبسكويت",cal:160,protein:3,carb:25,fat:4},
+{brand:"ماكدونالدز",item:"حليب الشوكولاتة",cal:148,protein:7,carb:28,fat:4},
+{brand:"ماكدونالدز",item:"مكياتو بالكراميل وجبة اساسية",cal:127,protein:4,carb:11,fat:8},
+{brand:"ماكدونالدز",item:"بطاطس بالحجم الصغير",cal:339,protein:5.5,carb:41,fat:17},
+{brand:"ماكدونالدز",item:"بطاطس بالحجم وسط",cal:679,protein:10.25,carb:83,fat:34},
+{brand:"ماكدونالدز",item:"بطاطس بالحجم الوجبة اساسية",cal:475,protein:6.75,carb:58,fat:24},
+{brand:"ماكدونالدز",item:"بطاطس بالحجم الكبير",cal:802,protein:10.25,carb:98,fat:41},
+{brand:"ماكدونالدز",item:"شرائح الأناناس",cal:25,protein:0.2375,carb:5.9,fat:0.05},
+{brand:"ماكدونالدز",item:"ماك فلوري لوتس",cal:497.76,protein:8.975,carb:85.54,fat:13.3},
+{brand:"ماكدونالدز",item:"أيس كريم صاندي كراميل",cal:346,protein:6.525,carb:60.5013,fat:8.655},
+{brand:"ماكدونالدز",item:"أيس كريم صاندي شوكولاته",cal:331,protein:7.175,carb:55.1,fat:9.1},
+{brand:"ماكدونالدز",item:"ماك فلوري أوريو",cal:399,protein:8.25,carb:61.8,fat:13.2},
+{brand:"ماكدونالدز",item:"ماك فلوري دولتشي كراميل",cal:501,protein:8.9,carb:70.7,fat:20.2889},
+{brand:"ماكدونالدز",item:"حليب الفراولة",cal:174,protein:7.4,carb:26.2,fat:4.4},
+{brand:"ماكدونالدز",item:"كوكا كولا",cal:150,protein:0,carb:37.5,fat:0},
+{brand:"ماكدونالدز",item:"كوكا كولا زيرو",cal:0,protein:0,carb:0,fat:0},
+{brand:"ماكدونالدز",item:"فانتا 12oz",cal:206,protein:0,carb:51.5,fat:0},
+{brand:"ماكدونالدز",item:"فانتا 16oz",cal:275,protein:0,carb:68.75,fat:0},
+{brand:"ماكدونالدز",item:"فانتا 21oz",cal:361,protein:0,carb:90.25,fat:0},
+{brand:"ماكدونالدز",item:"فانتا 32oz",cal:549,protein:0,carb:137.25,fat:0},
+{brand:"ماكدونالدز",item:"كوب عصير البرتقال 8oz",cal:114,protein:0,carb:28.5,fat:0},
+{brand:"ماكدونالدز",item:"كوب عصير البرتقال 16oz",cal:230,protein:0,carb:57.5,fat:0},
+{brand:"ماكدونالدز",item:"كوب عصير البرتقال 21oz",cal:301,protein:0,carb:75.25,fat:0},
+{brand:"ماكدونالدز",item:"عصير التفاح 12oz",cal:132,protein:0,carb:33,fat:0},
+{brand:"ماكدونالدز",item:"عصير التفاح 16oz",cal:176,protein:0,carb:44,fat:0},
+{brand:"ماكدونالدز",item:"عصير التفاح 21oz",cal:231,protein:0,carb:57.75,fat:0},
+{brand:"ماكدونالدز",item:"حليب بالشوكولاته",cal:184,protein:7.2,carb:28.9,fat:4.4},
+{brand:"ماكدونالدز",item:"حليب",cal:118,protein:6,carb:12.25,fat:5},
+{brand:"ماكدونالدز",item:"ايسد وايت موكا",cal:219,protein:6.45,carb:33.9,fat:6.4},
+{brand:"ماكدونالدز",item:"وايت موكا",cal:326,protein:15.975,carb:50,fat:6.9},
+{brand:"ماكدونالدز",item:"كوكيز دبل تشوكليت",cal:389,protein:3.5,carb:51,fat:19},
+{brand:"ماكدونالدز",item:"مافن نوتيلا",cal:427,protein:5.75,carb:47,fat:24},
+{brand:"ماكدونالدز",item:"مافن توت الازرق",cal:505,protein:7.25,carb:56,fat:28},
+{brand:"ماكدونالدز",item:"كرواسون تشوكليت",cal:287,protein:5,carb:40,fat:11.8889},
+{brand:"ماكدونالدز",item:"دونات التشوكليت والمكسرات",cal:359,protein:6.25,carb:34,fat:22},
+{brand:"ماكدونالدز",item:"دونات التوت والكريمة",cal:299,protein:4.5,carb:32,fat:17},
+{brand:"ماكدونالدز",item:"كوكيز تريبل تشوكليت",cal:389,protein:3.75,carb:48.5,fat:20},
+{brand:"ماكدونالدز",item:"كرواسون الزعتر",cal:246,protein:4.75,carb:27.5,fat:13},
+{brand:"ماكدونالدز",item:"قراند تشيكن سبيشال - Grand chicken special",cal:917,protein:36,carb:74,fat:53},
+{brand:"ماكدونالدز",item:"قراند تشيكن سبايسي - Grand chicken spicy",cal:760,protein:32,carb:68,fat:40},
+{brand:"ماكدونالدز",item:"قراند تشيكن ديلوكس - Grand chicken deluxe",cal:864,protein:32,carb:76,fat:48},
+{brand:"ماكدونالدز",item:"بيج تايستي - Big tasty",cal:833,protein:41,carb:57,fat:49},
+{brand:"ماكدونالدز",item:"تشيكن ماك - Chicken mac",cal:541,protein:22,carb:57,fat:25},
+{brand:"ماكدونالدز",item:"ماك تشيكن - Mac chicken",cal:423,protein:16,carb:47,fat:19},
+{brand:"ماكدونالدز",item:"تشيكن برجر - Chicken burger",cal:475,protein:19,carb:48,fat:23},
+{brand:"ماكدونالدز",item:"بيج ماك - Big mac",cal:534,protein:26,carb:49,fat:26},
+{brand:"ماكدونالدز",item:"ماك رويال - Mac royal",cal:532,protein:29,carb:41,fat:28},
+{brand:"ماكدونالدز",item:"كوارتر باوندر بالجبنة - Quarter punder cheese",cal:541,protein:31,carb:39,fat:29},
+{brand:"ماكدونالدز",item:"تشيكن ناجتس - Chicken nuggets",cal:376,protein:21,carb:28,fat:20},
+{brand:"ماكدونالدز",item:"ماك ارابيا دجاج - Mac arabia chicken",cal:567,protein:27,carb:54,fat:27},
+{brand:"ماكدونالدز",item:"سبايسي ماك تشيكن - Spicy mac chicken",cal:291,protein:11,carb:37,fat:11},
+{brand:"ماكدونالدز",item:"تشيز برجر - Cheese burger",cal:321,protein:15,carb:36,fat:13},
+{brand:"ماكدونالدز",item:"بيف برجر - Beef burger",cal:260,protein:12,carb:35,fat:8},
+{brand:"ماكدونالدز",item:"ميني اسيوي دجاج - Mini asian chicken",cal:358,protein:17,carb:41,fat:14},
+{brand:"ماكدونالدز",item:"برجر دجاج ديلوكس - Chicken burger deluxe",cal:383,protein:14,carb:39,fat:19},
+{brand:"ماكدونالدز",item:"دبل جبنة برجر - Double cheese burger",cal:460,protein:24,carb:37,fat:24},
+{brand:"ماكدونالدز",item:"ماك فيليه سمك - Fish fillet",cal:346,protein:14,carb:41,fat:14},
+{brand:"ماكدونالدز",item:"مافن صوصج بالبيض - Muffin Sausage with Egg",cal:343,protein:23,carb:29,fat:15},
+{brand:"ماكدونالدز",item:"مافن بالبيض - muffin with egg",cal:283,protein:18,carb:28,fat:11},
+{brand:"ماكدونالدز",item:"راب بيض وهاش براونز - Egg and hash brown wrap",cal:458,protein:18,carb:38,fat:26},
+{brand:"ماكدونالدز",item:"راب بيض وصوصج - Egg and sausage wrap",cal:337,protein:21,carb:25,fat:17},
+{brand:"ماكدونالدز",item:"هاش براونز- Hash browns",cal:181,protein:2,carb:14,fat:13},
+{brand:"ماكدونالدز",item:"كروسان جبنة - Cheese croissant",cal:360,protein:9,carb:36,fat:20},
+{brand:"ماكدونالدز",item:"كروسان شوكولاته - Chocolate Croissant",cal:389,protein:8,carb:42,fat:21},
+{brand:"ماكدونالدز",item:"كروسان زعتر - Thyme Croissant",cal:362,protein:8,carb:42,fat:18},
+{brand:"ماكدونالدز",item:"كوكيز دبل شوكولاته - Double Chocolate Cookie",cal:365,protein:4,carb:49,fat:17},
+{brand:"ماكدونالدز",item:"كوكيز تريبل شوكولاته - Triple Chocolate Cookie",cal:386,protein:5,carb:51,fat:18},
+{brand:"ماكدونالدز",item:"ماكرون قهوة - Coffee Macaron",cal:59,protein:1,carb:7,fat:3},
+{brand:"ماكدونالدز",item:"ماكرون توت - Berry Macaron",cal:49,protein:1,carb:9,fat:1},
+{brand:"ماكدونالدز",item:"ماكرون كاراميل - Caramel Macaron",cal:62,protein:1,carb:10,fat:2},
+{brand:"ماكدونالدز",item:"بطاطس (كبير) - Large Fries",cal:809,protein:12,carb:98,fat:41},
+{brand:"ماكدونالدز",item:"سلطة سيزر دجاج - Chicken Caesar Salad",cal:225,protein:28,carb:8,fat:9},
+{brand:"ماكدونالدز",item:"ستشيكن ناجتس - Chicken Nuggets",cal:254,protein:14,carb:18,fat:14},
+{brand:"ماكدونالدز",item:"تشيكن ناجتس - Chicken Nuggets",cal:169,protein:10,carb:12,fat:9},
+{brand:"ماكدونالدز",item:"صلصة الباربكيو - Barbecue Sauce",cal:53,protein:0,carb:11,fat:1},
+{brand:"ماكدونالدز",item:"صلصة سويت اند ساور - Sweet and Sour Sauce",cal:53,protein:0,carb:11,fat:1},
+{brand:"ماكدونالدز",item:"صلصة هوت ماسترد - Hot Mustard Sauce",cal:73,protein:0,carb:7,fat:5},
+{brand:"ماكدونالدز",item:"ماك فلوري اوريو - McFlurry Oreo",cal:397,protein:8,carb:62,fat:13},
+{brand:"ماكدونالدز",item:"آيس كريم صاندي شوكولا - Ice Cream Sundae Chocolate",cal:329,protein:7,carb:55,fat:9},
+{brand:"ماكدونالدز",item:"آيس كريم صاندي فراولة - Ice Cream Sundae Strawberry",cal:291,protein:6,carb:51,fat:7},
+{brand:"ماكدونالدز",item:"آيس كريم بالبسكويت - Ice Cream with Biscuit",cal:165,protein:4,carb:26,fat:5},
+{brand:"ماكدونالدز",item:"عصير التفاح - Apple Juice",cal:244,protein:0,carb:61,fat:0},
+{brand:"ماكدونالدز",item:"كوكاكولا كبير - Large Coca-Cola",cal:400,protein:0,carb:100,fat:0},
+{brand:"ماكدونالدز",item:"فانتا كبير - Large Fanta",cal:548,protein:0,carb:137,fat:0},
+{brand:"ماكدونالدز",item:"سبرايت كبير - Large Sprite",cal:448,protein:0,carb:112,fat:0},
+{brand:"ماكدونالدز",item:"كوكاكولا زيرو كبير - Large Coca-Cola Zero",cal:0,protein:0,carb:0,fat:0},
+{brand:"ماكدونالدز",item:"حليب بالشوكولاتة - Chocolate Milk",cal:176,protein:7,carb:28,fat:4},
+{brand:"ماكدونالدز",item:"حليب بالفراولة - Strawberry Milk",cal:168,protein:7,carb:26,fat:4},
+{brand:"ماكدونالدز",item:"حليب - Milk",cal:122,protein:7,carb:10,fat:6},
+{brand:"ماكدونالدز",item:"قهوة سوداء - Black Coffee",cal:8,protein:0,carb:2,fat:0},
+{brand:"ماكدونالدز",item:"كابتشينو - Cappuccino",cal:125,protein:8,carb:12,fat:5},
+{brand:"ماكدونالدز",item:"لاتيه - Latte",cal:138,protein:8,carb:13,fat:6},
+{brand:"ماكدونالدز",item:"موكا - Mocha",cal:92,protein:5,carb:9,fat:4},
+{brand:"ماكدونالدز",item:"هوت شوكولات - Hot Chocolate",cal:244,protein:6,carb:37,fat:8},
+{brand:"ماكدونالدز",item:"اسبريسو - Espresso",cal:0,protein:0,carb:0,fat:0},
+{brand:"ماكدونالدز",item:"شاي - Tea",cal:4,protein:0.6,carb:0.4,fat:0},
+{brand:"ماكدونالدز",item:"جراند تشيكن سبايسي - Grand Chicken Spicy",cal:638,protein:39,carb:53,fat:30},
+{brand:"ماكدونالدز",item:"بيج تيستي - Big Tasty",cal:598,protein:42,carb:40,fat:30},
+{brand:"ماكدونالدز",item:"تشيكن ماك - Chicken Mac",cal:420,protein:26,carb:52,fat:12},
+{brand:"ماكدونالدز",item:"بيج ماك - Big Mac",cal:396,protein:25,carb:38,fat:16},
+{brand:"ماكدونالدز",item:"بيج ماك 122",cal:484,protein:3,carb:100,fat:8},
+{brand:"ماكدونالدز",item:"تشيكن ماك ماكدونالدز",cal:860,protein:47,carb:69,fat:44}
+];
+const TARGET = {cal:2400, protein:210, carb:230, fat:70};
+const MEAL_NAMES = ["🍳 Meal 1","🍗 Meal 2","🍽️ Meal 3","🥤 Snack","🍎 Snack 2"];
+let store = load();
+let curDate = todayStr();
+let pickTarget = null;
+let picked = null;
+let openMeals = {};
+function todayStr(){const d=new Date();const y=d.getFullYear();const m=String(d.getMonth()+1).padStart(2,"0");const dd=String(d.getDate()).padStart(2,"0");return y+"-"+m+"-"+dd;}
+/* Fresh install — no legacy migration (isolated per-user keys). */
+function load(){try{return JSON.parse(localStorage.getItem("foodlog_fahad")||"{}");}catch(e){return {};}}
+function save(){localStorage.setItem("foodlog_fahad",JSON.stringify(store));}
+function dayData(){ if(!store[curDate]) store[curDate]=MEAL_NAMES.map(()=>[]);
+  while(store[curDate].length<MEAL_NAMES.length) store[curDate].push([]);
+  return store[curDate];}
+function r1(n){return Math.round(n);}
+function render(){
+  const day = dayData();
+  let tot={cal:0,protein:0,carb:0,fat:0};
+  const mealsDiv = document.getElementById("meals");
+  mealsDiv.innerHTML="";
+  day.forEach((items,mi)=>{
+    let ms={cal:0,protein:0,carb:0,fat:0};
+    items.forEach(it=>{ms.cal+=it.cal;ms.protein+=it.protein;ms.carb+=it.carb;ms.fat+=it.fat;});
+    tot.cal+=ms.cal;tot.protein+=ms.protein;tot.carb+=ms.carb;tot.fat+=ms.fat;
+    const open = openMeals[mi] ?? (items.length>0);
+    const card=document.createElement("div");card.className="meal";
+    const barTot=(ms.protein*4+ms.carb*4+ms.fat*9)||1;
+    const pPct=(ms.protein*4/barTot*100), cPct=(ms.carb*4/barTot*100), fPct=(ms.fat*9/barTot*100);
+    card.innerHTML=`
+      <div class="meal-h" data-mi="${mi}">
+        <div><div class="name">${MEAL_NAMES[mi]}</div><div class="sum">${items.length} item${items.length===1?'':'s'} ${open?'▾':'▸'}</div></div>
+        <div style="text-align:end;"><div class="kc" style="font-size:15px;">${r1(ms.cal)}<span style="font-size:11px;color:var(--muted)"> kcal</span></div><div class="sum">P${r1(ms.protein)} C${r1(ms.carb)} F${r1(ms.fat)}</div></div>
+      </div>
+      <div class="mealbar">${ms.cal>0?`<i style="flex:${pPct};background:var(--p)"></i><i style="flex:${cPct};background:var(--c)"></i><i style="flex:${fPct};background:var(--f)"></i>`:''}</div>
+      <div class="meal-body" style="display:${open?'block':'none'}">
+        ${items.map((it,ii)=>`
+          <div class="item">
+            <div class="nm">${it.name}<small>${it.qtyLabel} · P ${r1(it.protein)} · C ${r1(it.carb)} · F ${r1(it.fat)}</small></div>
+            <div class="kc">${r1(it.cal)}</div>
+            <button class="x" data-mi="${mi}" data-ii="${ii}">×</button>
+          </div>`).join("")}
+        <button class="add" data-add="${mi}">＋ Add food</button>
+      </div>`;
+    mealsDiv.appendChild(card);
+  });
+  set("calNow",r1(tot.cal)); set("pNow",r1(tot.protein));
+  set("cNow",r1(tot.carb)); set("fNow",r1(tot.fat));
+  const left = TARGET.cal - tot.cal;
+  document.getElementById("calLeft").textContent = left>=0 ? `kcal · ${r1(left)} left` : `kcal · ${r1(-left)} over`;
+  document.getElementById("calLeft").style.color = left>=0 ? "var(--muted)" : "var(--over)";
+  ring("ringCal",tot.cal,TARGET.cal,58);
+  ring("ringP",tot.protein,TARGET.protein,45);
+  ring("ringC",tot.carb,TARGET.carb,32);
+  ring("ringF",tot.fat,TARGET.fat,19);
+  document.querySelectorAll(".meal-h").forEach(h=>h.onclick=()=>{
+    const mi=+h.dataset.mi; openMeals[mi]=!(openMeals[mi] ?? (day[mi].length>0)); render();});
+  document.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>openModal(+b.dataset.add));
+  document.querySelectorAll(".item .x").forEach(x=>x.onclick=(e)=>{
+    e.stopPropagation();
+    const mi=+x.dataset.mi, ii=+x.dataset.ii;
+    day[mi].splice(ii,1); save(); render();});
+  save();
+}
+function set(id,v){document.getElementById(id).textContent=v;}
+function ring(id,now,tgt,r){
+  const el=document.getElementById(id);
+  const C=2*Math.PI*r;
+  const pct=Math.max(0,Math.min(1, now/tgt));
+  el.style.strokeDasharray=C;
+  el.style.strokeDashoffset=C*(1-pct);
+}
+let activeCat = "all";
+function openModal(mi){
+  pickTarget=mi; picked=null;
+  document.getElementById("sheetTitle").textContent="Add to "+MEAL_NAMES[mi];
+  document.getElementById("qtyPane").style.display="none";
+  document.getElementById("searchBox").value="";
+  activeCat="all";
+  var _cf=document.getElementById("cform"); if(_cf) _cf.classList.remove("on");
+  buildTabs(); renderFoodList();
+  document.getElementById("modal").classList.add("on");
+}
+function closeModal(){document.getElementById("modal").classList.remove("on");}
+const CATS=[
+  {k:"all",l:"🗂️ All"},
+  {k:"custom",l:"🍴 My Foods"},
+  {k:"faves",l:"💛 Faves"},
+  {k:"بروتين",l:"🥩 Protein"},
+  {k:"كارب",l:"🍚 Carb"},
+  {k:"دهون",l:"🥑 Fat"},
+  {k:"فواكه",l:"Fruit 🍎"},
+  {k:"خضار",l:"Veg 🥦"},
+  {k:"مطاعم",l:"Restaurants 🍔"}
+];
+function buildTabs(){
+  const t=document.getElementById("catTabs");t.innerHTML="";
+  CATS.forEach(c=>{
+    const b=document.createElement("button");b.className="tab"+(c.k===activeCat?" on":"");
+    b.textContent=c.l;b.onclick=()=>{activeCat=c.k;buildTabs();renderFoodList();};
+    t.appendChild(b);
+  });
+}
+
+/* ---- Favorites (per-user) ---- */
+function loadFavs(){try{return JSON.parse(localStorage.getItem("favorites_fahad")||"[]");}catch(e){return [];}}
+function saveFavs(){localStorage.setItem("favorites_fahad",JSON.stringify(FAVS));}
+let FAVS=loadFavs();
+function favId(r){ return r.type==="meal" ? "m:"+r.item+"|"+r.brand : (r.type==="custom" ? "c:"+r.name : "i:"+r.name); }
+function isFav(r){ return FAVS.includes(favId(r)); }
+function toggleFav(r){ const id=favId(r); const i=FAVS.indexOf(id); if(i>=0)FAVS.splice(i,1); else FAVS.push(id); saveFavs(); }
+/* ---- Food emoji by keyword ---- */
+function foodEmoji(r){
+  if(r.type==="meal") return "🍔";
+  const n=(r.name||"")+"";
+  const has=(...ks)=>ks.some(k=>n.includes(k));
+  if(has("بيض","Egg","egg")) return "🥚";
+  if(has("دجاج","Chicken","chicken")) return "🍗";
+  if(has("تركي","Turkey")) return "🦃";
+  if(has("لحم","Beef","بقري")) return "🥩";
+  if(has("سمك","Fish","تونة","Tuna","سالمون","Salmon")) return "🐟";
+  if(has("جمبري","Shrimp")) return "🦐";
+  if(has("رز","Rice","rice")) return "🍚";
+  if(has("مكرونة","Pasta","pasta")) return "🍝";
+  if(has("بطاطا حلوة","sweet potato","Sweet")) return "🍠";
+  if(has("بطاطس","Potato","potato")) return "🥔";
+  if(has("شوفان","Oats","oat")) return "🥣";
+  if(has("كورن فليكس","Corn")) return "🥣";
+  if(has("خبز","توست","Bread","toast","Toast","صامولي","برجر","bun")) return "🍞";
+  if(has("تمر","Date","date")) return "🌴";
+  if(has("فواكه","Fruit","موز","banana","تفاح","apple")) return "🍎";
+  if(has("خضراوات","خضار","Veg","veg")) return "🥦";
+  if(has("جبن","Cheese","cheese","حلوم","فيتا","قريش","فلادلفيا","قشقوان")) return "🧀";
+  if(has("زبادي","yogurt","Yogurt","لبن","لبنه")) return "🥛";
+  if(has("حليب","Milk","milk")) return "🥛";
+  if(has("واي","Whey","whey","بروتين")) return "🥤";
+  if(has("مكسرات","Nuts","nut")) return "🥜";
+  if(has("زبدة الفول","Peanut")) return "🥜";
+  if(has("زيت","oil","Oil")) return "🫒";
+  if(has("عسل","Honey")) return "🍯";
+  if(has("شوكل","choco","Choco","تشوكلت")) return "🍫";
+  if(has("فشار","popcorn")) return "🍿";
+  return "🍴";
+}
+function renderFoodList(){
+  const q=(document.getElementById("searchBox").value||"").trim();
+  const list=document.getElementById("foodList");list.innerHTML="";
+  let rows=[];
+  if(activeCat==="مطاعم"){
+    rows=MEALS.map(m=>({type:"meal",...m}));
+  }else if(activeCat==="custom"){
+    rows=CUSTOM.map((m,ci)=>({type:"custom",ci,...m}));
+  }else if(activeCat==="faves"){
+    const all=CUSTOM.map((m,ci)=>({type:"custom",ci,...m})).concat(INGREDIENTS.map(i=>({type:"ing",...i}))).concat(MEALS.map(m=>({type:"meal",...m})));
+    rows=all.filter(r=>isFav(r));
+  }else if(activeCat==="all"){
+    rows=CUSTOM.map((m,ci)=>({type:"custom",ci,...m}))
+      .concat(INGREDIENTS.map(i=>({type:"ing",...i})))
+      .concat(MEALS.map(m=>({type:"meal",...m})));
+  }else{
+    rows=INGREDIENTS.filter(i=>i.cat===activeCat).map(i=>({type:"ing",...i}));
+  }
+  if(q) rows=rows.filter(r=>(r.name||r.item||"").includes(q)||(r.brand||"").includes(q));
+  const grid=document.createElement("div");grid.className="fgrid";
+  rows.forEach((r,idx)=>{
+    const title=r.type==="meal"?r.item:r.name;
+    let sub;
+    if(r.type==="custom"){const ref=r.refAmt||100;sub=(r.per100?("per "+ref+"g · "+r1(r.cal*ref)):("serving · "+r1(r.cal)))+" kcal";}
+    else if(r.type==="ing"){sub="per "+(r.unit==='حبة'?'pc':'100'+r.unit)+" · "+r1(r.unit==='حبة'?r.cal:r.cal*100)+" kcal";}
+    else{sub=r.brand+" · "+r.cal+" kcal";}
+    const fav=isFav(r);
+    const cell=document.createElement("div");cell.className="fcell";
+    cell.innerHTML=`<button class="fav" data-fav="${idx}">${fav?"💛":"🤍"}</button>
+      <div class="femoji">${foodEmoji(r)}</div>
+      <div class="ftitle">${title}</div>
+      <div class="fsub">${sub}</div>
+      ${r.type==="custom"?`<button class="fdel" data-delc="${r.ci}">🗑</button>`:""}`;
+    cell.onclick=()=>selectFood(r);
+    grid.appendChild(cell);
+    cell.__row=r;
+  });
+  list.appendChild(grid);
+  grid.querySelectorAll("button[data-fav]").forEach(b=>b.onclick=(e)=>{
+    e.stopPropagation();
+    const r=b.closest(".fcell").__row; toggleFav(r); renderFoodList();
+  });
+  grid.querySelectorAll("button[data-delc]").forEach(b=>b.onclick=(e)=>{
+    e.stopPropagation();
+    if(confirm("Delete this custom food?")){ CUSTOM.splice(+b.dataset.delc,1); saveCustom(); renderFoodList(); }
+  });
+  if(rows.length===0) list.innerHTML='<div style="padding:24px;text-align:center;color:var(--muted)">'+(activeCat==="faves"?"No favorites yet — tap 🤍 on any food.":"No results")+'</div>';
+}
+function selectFood(r){
+  picked=r;
+  const pane=document.getElementById("qtyPane");pane.style.display="block";
+  const qin=document.getElementById("qtyInput");
+  const unitEl=document.getElementById("qtyUnit");
+  const quick=document.getElementById("quickBtns");
+  if(r.type==="custom"){
+    document.getElementById("pickedName").innerHTML=`${r.name} <small>(My Foods)</small>`;
+    if(r.per100){ unitEl.textContent="g"; qin.value=100; qin.step="10";
+      quick.innerHTML=["30","50","100","150","200"].map(v=>`<button data-q="${v}">${v}</button>`).join(""); }
+    else { unitEl.textContent="serving"; qin.value=1; qin.step="0.5";
+      quick.innerHTML=["0.5","1","1.5","2"].map(v=>`<button data-q="${v}">${v}</button>`).join(""); }
+  }else if(r.type==="meal"){
+    document.getElementById("pickedName").innerHTML=`${r.item} <small>${r.brand}</small>`;
+    unitEl.textContent="serving";
+    qin.value=1;qin.step="0.5";
+    quick.innerHTML=["0.5","1","1.5","2"].map(v=>`<button data-q="${v}">${v}</button>`).join("");
+  }else{
+    document.getElementById("pickedName").innerHTML=`${r.name} <small>(${r.cat})</small>`;
+    if(r.unit==="حبة"){unitEl.textContent="piece";qin.value=1;qin.step="1";
+      quick.innerHTML=["1","2","3","4"].map(v=>`<button data-q="${v}">${v}</button>`).join("");
+    }else{unitEl.textContent=r.unit;qin.value=100;qin.step="10";
+      quick.innerHTML=["30","50","100","150","200"].map(v=>`<button data-q="${v}">${v}</button>`).join("");
+    }
+  }
+  quick.querySelectorAll("button").forEach(b=>b.onclick=()=>{qin.value=b.dataset.q;updatePreview();});
+  qin.oninput=updatePreview;
+  updatePreview();
+  pane.scrollIntoView({behavior:"smooth",block:"end"});
+}
+function calc(r,qty){
+  return {cal:r.cal*qty,protein:r.protein*qty,carb:r.carb*qty,fat:r.fat*qty};
+}
+function updatePreview(){
+  const qty=parseFloat(document.getElementById("qtyInput").value)||0;
+  const m=calc(picked,qty);
+  document.getElementById("qtyPreview").innerHTML=
+    `<span>kcal <b>${r1(m.cal)}</b></span><span>Protein <b>${r1(m.protein)}</b>g</span><span>Carb <b>${r1(m.carb)}</b>g</span><span>Fat <b>${r1(m.fat)}</b>g</span>`;
+}
+function saveItem(){
+  const qty=parseFloat(document.getElementById("qtyInput").value)||0;
+  if(qty<=0){return;}
+  const m=calc(picked,qty);
+  let name,label;
+  if(picked.type==="meal"){name=picked.item+" ("+picked.brand+")";label=qty+" serving";}
+  else if(picked.type==="custom"){name=picked.name;label=qty+" "+(picked.per100?"g":"serving");}
+  else{name=picked.name;label=qty+" "+(picked.unit==="حبة"?"piece":picked.unit);}
+  dayData()[pickTarget].push({name,qtyLabel:label,...m});
+  openMeals[pickTarget]=true;
+  save();closeModal();render();
+}
+document.getElementById("closeModal").onclick=closeModal;
+document.getElementById("modal").onclick=(e)=>{if(e.target.id==="modal")closeModal();};
+document.getElementById("searchBox").oninput=renderFoodList;
+document.getElementById("saveItem").onclick=saveItem;
+/* custom food form */
+let cfPerAmount=false;
+function cfReset(){document.getElementById("cfName").value="";["cfCal","cfP","cfC","cfF","cfAmt"].forEach(id=>document.getElementById(id).value="");
+  cfPerAmount=false;document.getElementById("cfWhole").classList.add("on");document.getElementById("cfPerAmt").classList.remove("on");document.getElementById("cfAmt").style.display="none";}
+document.getElementById("customAddBtn").onclick=()=>{const f=document.getElementById("cform");f.classList.toggle("on");if(f.classList.contains("on"))document.getElementById("cfName").focus();};
+document.getElementById("cfWhole").onclick=()=>{cfPerAmount=false;document.getElementById("cfWhole").classList.add("on");document.getElementById("cfPerAmt").classList.remove("on");document.getElementById("cfAmt").style.display="none";};
+document.getElementById("cfPerAmt").onclick=()=>{cfPerAmount=true;document.getElementById("cfPerAmt").classList.add("on");document.getElementById("cfWhole").classList.remove("on");document.getElementById("cfAmt").style.display="";document.getElementById("cfAmt").focus();};
+document.getElementById("cfCancel").onclick=()=>{document.getElementById("cform").classList.remove("on");cfReset();};
+document.getElementById("cfSave").onclick=()=>{
+  const name=(document.getElementById("cfName").value||"").trim();
+  const cal=parseFloat(document.getElementById("cfCal").value)||0;
+  const p=parseFloat(document.getElementById("cfP").value)||0;
+  const c=parseFloat(document.getElementById("cfC").value)||0;
+  const f=parseFloat(document.getElementById("cfF").value)||0;
+  if(!name){alert("Please enter a name.");return;}
+  if(cal<=0&&p<=0&&c<=0&&f<=0){alert("Please enter at least one macro.");return;}
+  let div=1, refAmt=0;
+  if(cfPerAmount){
+    refAmt=parseFloat(document.getElementById("cfAmt").value)||0;
+    if(refAmt<=0){alert("Enter how many grams the macros are for (e.g. 100).");return;}
+    div=refAmt;
+  }
+  /* store per-gram if per-amount (cal/refAmt), or whole if serving. calc() multiplies by qty. */
+  CUSTOM.push({name, per100:cfPerAmount, refAmt:refAmt, cal:cal/div, protein:p/div, carb:c/div, fat:f/div});
+  saveCustom();
+  document.getElementById("cform").classList.remove("on"); cfReset();
+  activeCat="custom"; buildTabs(); renderFoodList();
+};
+function addDays(dateStr,n){const [y,m,d]=dateStr.split("-").map(Number);const dt=new Date(y,m-1,d+n);
+  const yy=dt.getFullYear();const mm=String(dt.getMonth()+1).padStart(2,"0");const dd=String(dt.getDate()).padStart(2,"0");
+  return `${yy}-${mm}-${dd}`;}
+function startOfWeek(dateStr){ // Monday-based
+  const d=new Date(dateStr+"T00:00:00"); const day=(d.getDay()+6)%7; return addDays(dateStr,-day);
+}
+let weekStart=startOfWeek(todayStr());
+function dayHasFood(dateStr){ const dd=store[dateStr]; if(!dd) return false; return dd.some(m=>m&&m.length); }
+function renderWeekStrip(){
+  const strip=document.getElementById("weekStrip"); if(!strip) return;
+  strip.innerHTML="";
+  const dows=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const first=new Date(weekStart+"T00:00:00");
+  document.getElementById("weekTitle").textContent=months[first.getMonth()]+" "+first.getFullYear();
+  for(let i=0;i<7;i++){
+    const ds=addDays(weekStart,i); const dt=new Date(ds+"T00:00:00");
+    const el=document.createElement("div"); el.className="wday"+(ds===curDate?" today":"");
+    el.innerHTML='<div class="wdl">'+dows[i]+'</div><div class="wdn">'+dt.getDate()+'</div><div class="wdot'+(dayHasFood(ds)?'':' hide')+'"></div>';
+    el.onclick=()=>{ goToDate(ds); };
+    strip.appendChild(el);
+  }
+}
+function goToDate(d){curDate=d;(function(){const hr=new Date().getHours();const g=hr<12?"Good morning ☀️":hr<18?"Good afternoon 👋":"Good evening 🌙";const el=document.getElementById("hgreet");if(el)el.textContent=g;})();
+  weekStart=startOfWeek(curDate); openMeals={};render();renderSupps();renderWeekStrip();}
+document.getElementById("todayBtn").onclick=()=>goToDate(todayStr());
+document.getElementById("weekPrev").onclick=()=>{weekStart=addDays(weekStart,-7);renderWeekStrip();};
+document.getElementById("weekNext").onclick=()=>{weekStart=addDays(weekStart,7);renderWeekStrip();};
+let clipboardDay=null;
+function countItems(dateStr){
+  const data=store[dateStr];if(!data)return 0;
+  return data.reduce((n,meal)=>n+meal.length,0);
+}
+function deepCopyMeals(meals){return meals.map(meal=>meal.map(it=>({...it})));}
+function copyCurrentDay(){
+  const n=countItems(curDate);
+  if(n===0){alert("This day has no food to copy.");return;}
+  clipboardDay={date:curDate, meals:deepCopyMeals(dayData())};
+  updateCopyUI();
+  alert(`Copied ${curDate} (${n} items). Go to another day and paste.`);
+}
+function pasteIntoCurrentDay(){
+  if(!clipboardDay){alert("Nothing copied. Tap Copy on a day first.");return;}
+  const target=dayData();
+  clipboardDay.meals.forEach((meal,mi)=>{
+    if(!target[mi]) target[mi]=[];
+    meal.forEach(item=>target[mi].push({...item}));
+  });
+  save();openMeals={};render();
+  alert(`Pasted ${clipboardDay.date} into ${curDate}.`);
+}
+function updateCopyUI(){/* no-op: copy/paste UI removed */}
+/* copy/paste removed from UI */
+document.getElementById("clearDay").onclick=()=>{
+  if(confirm("Clear all foods for this day?")){
+    store[curDate]=MEAL_NAMES.map(()=>[]);save();render();renderWeekStrip();}
+};
+
+/* ---------- SUPPLEMENTS (daily checklist, saved per-day under "supplog") ---------- */
+const SUPPLEMENTS = [
+  {id:"creatine", name:"Creatine · الكرياتين", dose:"1 scoop (5 g) every day, anytime"}
+];
+function loadSupp(){try{return JSON.parse(localStorage.getItem("supplog_fahad")||"{}");}catch(e){return {};}}
+function saveSupp(){localStorage.setItem("supplog_fahad",JSON.stringify(suppStore));}
+let suppStore = loadSupp();
+function suppDay(){ if(!suppStore[curDate]) suppStore[curDate]={}; return suppStore[curDate]; }
+function renderSupps(){
+  const day = suppDay();
+  const list = document.getElementById("suppsList");
+  list.innerHTML = "";
+  SUPPLEMENTS.forEach(s=>{
+    const done = !!day[s.id];
+    const row = document.createElement("div");
+    row.className = "supp"+(done?" done":"");
+    row.innerHTML = `<div class="box">${done?"✓":""}</div>
+      <div class="info"><div class="nm">${s.name}</div><div class="dose">${s.dose}</div></div>`;
+    row.onclick = ()=>{ const d=suppDay(); d[s.id]=!d[s.id]; saveSupp(); renderSupps(); };
+    list.appendChild(row);
+  });
+}
+
+/* ============ PLAN VIEW + SWAPS + PLAN SWITCHER ============ */
+function ing(name){return INGREDIENTS.find(i=>i.name===name);}
+const SWAP_GROUPS = {
+  protein_lean: {match:"protein", foods:["دجاج","لحم بقري (10% دهون)","صدر تركي","سمك مطبوخ","تونة بالماء","جمبري مطبوخ","سالمون مطبوخ"]},
+  dairy_pro: {match:"protein", foods:["زبادي يوناني خالي الدسم","جبنة قريش"]},
+  whey: {match:"protein", foods:["واي بروتين أيزوليت","واي بروتين كونسينتريت"]},
+  carb_main: {match:"carb", foods:["رز أبيض مطبوخ","رز بني مطبوخ","بطاطس مطبوخة","بطاطا حلوة مطبوخة","مكرونة مطبوخة"]},
+  carb_oat: {match:"carb", foods:["شوفان","كورن فليكس"]},
+  fruit: {match:"carb", foods:["فواكه (موز، تفاح، برتقال)","تمر"]},
+  fat: {match:"fat", foods:["زيت زيتون","مكسرات","زبدة الفول السوداني (بيور)"]}
+};
+function groupOf(name){
+  for(const k in SWAP_GROUPS){ if(SWAP_GROUPS[k].foods.includes(name)) return k; }
+  return null;
+}
+/* ---- The 4 plans. Each: {name, desc, meals:[{mi, items:[{name,qty}]}]} ---- */
+const PLANS = [
+  {
+    name:"Default", desc:"Whole-food default — no protein powder. ~2400 kcal · 210g+ protein for the cut.",
+    meals:[
+      {mi:0, items:[{name:"دجاج",qty:230},{name:"رز أبيض مطبوخ",qty:230},{name:"خضراوات",qty:150},{name:"زيت زيتون",qty:14}]},
+      {mi:1, items:[{name:"لحم بقري (10% دهون)",qty:150},{name:"بطاطس مطبوخة",qty:280},{name:"خضراوات",qty:150}]},
+      {mi:2, items:[{name:"دجاج",qty:200},{name:"رز أبيض مطبوخ",qty:160},{name:"خضراوات",qty:150},{name:"زيت زيتون",qty:8}]},
+      {mi:3, items:[{name:"زبادي يوناني خالي الدسم",qty:200},{name:"فواكه (موز، تفاح، برتقال)",qty:200},{name:"مكسرات",qty:22}]}
+    ]
+  },
+  {
+    name:"Chicken & Eggs", desc:"Egg-white base + chicken meals. High protein, no powder. ~2400 kcal.",
+    meals:[
+      {mi:0, items:[{name:"بياض البيض",qty:280},{name:"شوفان",qty:85},{name:"فواكه (موز، تفاح، برتقال)",qty:150},{name:"زبدة الفول السوداني (بيور)",qty:25}]},
+      {mi:1, items:[{name:"دجاج",qty:280},{name:"رز أبيض مطبوخ",qty:270},{name:"خضراوات",qty:150},{name:"زيت زيتون",qty:14}]},
+      {mi:2, items:[{name:"دجاج",qty:220},{name:"بطاطا حلوة مطبوخة",qty:260},{name:"خضراوات",qty:150},{name:"زيت زيتون",qty:10}]}
+    ]
+  },
+  {
+    name:"Fish Day", desc:"Tuna + salmon, lighter added fats. ~2400 kcal · high protein.",
+    meals:[
+      {mi:0, items:[{name:"تونة بالماء",qty:200},{name:"رز أبيض مطبوخ",qty:210},{name:"خضراوات",qty:150},{name:"زيت زيتون",qty:12}]},
+      {mi:1, items:[{name:"سالمون مطبوخ",qty:210},{name:"بطاطس مطبوخة",qty:250},{name:"خضراوات",qty:150},{name:"زيت زيتون",qty:5}]},
+      {mi:2, items:[{name:"دجاج",qty:230},{name:"رز أبيض مطبوخ",qty:170},{name:"خضراوات",qty:150},{name:"زيت زيتون",qty:10}]},
+      {mi:3, items:[{name:"زبادي يوناني خالي الدسم",qty:250},{name:"تمر",qty:45},{name:"مكسرات",qty:10}]}
+    ]
+  },
+  {
+    name:"Beef & Rice", desc:"Lean beef + a big chicken meal + cottage-cheese snack. ~2400 kcal.",
+    meals:[
+      {mi:0, items:[{name:"لحم بقري (10% دهون)",qty:220},{name:"رز أبيض مطبوخ",qty:320},{name:"خضراوات",qty:150},{name:"زيت زيتون",qty:6}]},
+      {mi:1, items:[{name:"دجاج",qty:320},{name:"بطاطس مطبوخة",qty:340},{name:"خضراوات",qty:150},{name:"زيت زيتون",qty:10}]},
+      {mi:2, items:[{name:"جبنة قريش",qty:220},{name:"فواكه (موز، تفاح، برتقال)",qty:230},{name:"مكسرات",qty:22}]}
+    ]
+  }
+];
+let activePlan = 0;
+function macrosFor(name,qty){const r=ing(name);if(!r)return{cal:0,protein:0,carb:0,fat:0};
+  return {cal:r.cal*qty,protein:r.protein*qty,carb:r.carb*qty,fat:r.fat*qty};}
+function unitLabel(name,qty){const r=ing(name);return qty+" "+(r&&r.unit==="حبة"?"pc":(r?r.unit:"g"));}
+function matchQty(origName,origQty,altName){
+  const a=ing(altName); if(!a) return origQty;
+  const g=groupOf(origName);
+  const macro=g?SWAP_GROUPS[g].match:"cal";
+  const oVal=macrosFor(origName,origQty)[macro];
+  const per=a[macro];
+  let q;
+  if(per&&per>0){ q=oVal/per; }
+  else if(a.cal>0){ q=macrosFor(origName,origQty).cal/a.cal; }
+  else return origQty;
+  if(a.unit==="حبة") q=Math.max(1,Math.round(q)); else q=Math.round(q/5)*5;
+  return q||origQty;
+}
+function logFood(mi,name,qty){
+  const m=macrosFor(name,qty);
+  dayData()[mi].push({name,qtyLabel:unitLabel(name,qty),...m});
+  openMeals[mi]=true; save();
+}
+function askSlot(hintText, cb){
+  const wrap=document.getElementById("slotPick");
+  const list=document.getElementById("slotBtns");
+  document.getElementById("slotHint").textContent=hintText?("Adding: "+hintText):"";
+  list.innerHTML="";
+  MEAL_NAMES.forEach((nm,i)=>{
+    const b=document.createElement("button");
+    b.textContent=nm;
+    b.onclick=()=>{ wrap.classList.remove("on"); cb(i); };
+    list.appendChild(b);
+  });
+  wrap.classList.add("on");
+}
+document.getElementById("slotCancel").onclick=()=>document.getElementById("slotPick").classList.remove("on");
+document.getElementById("slotPick").onclick=(e)=>{if(e.target.id==="slotPick")document.getElementById("slotPick").classList.remove("on");};
+function flashBtn(btn){
+  const old=btn.textContent; btn.textContent="✓ Added"; btn.classList.add("flash");
+  setTimeout(()=>{btn.textContent=old; btn.classList.remove("flash");},1100);
+}
+function addFoodToSlot(name,qty,btn){
+  askSlot(name, (mi)=>{ logFood(mi,name,qty); render(); flashBtn(btn); });
+}
+function addRestaurantToSlot(item,brand,cal,p,c,f,btn){
+  askSlot(item+" ("+brand+")", (mi)=>{
+    dayData()[mi].push({name:item+" ("+brand+")",qtyLabel:"1 serving",cal:+cal,protein:+p,carb:+c,fat:+f});
+    openMeals[mi]=true; save(); render(); flashBtn(btn);
+  });
+}
+function renderPlanPicker(){
+  const pp=document.getElementById("planPick"); pp.innerHTML="";
+  PLANS.forEach((pl,i)=>{
+    const b=document.createElement("button");
+    b.className="planbtn"+(i===activePlan?" on":"");
+    b.textContent=pl.name;
+    b.onclick=()=>{activePlan=i;renderPlanPicker();renderPlan();};
+    pp.appendChild(b);
+  });
+  document.getElementById("planDesc").textContent=PLANS[activePlan].desc;
+}
+let selectMode=false; let selected=[]; // array of "pidx-iidx"
+function selKey(pidx,iidx){return pidx+"-"+iidx;}
+function updateSelBar(){
+  const addB=document.getElementById("selAdd"), canB=document.getElementById("selCancel"), tgl=document.getElementById("selToggle");
+  if(selectMode){ tgl.style.display="none"; addB.style.display=""; canB.style.display=""; addB.textContent="＋ Add ("+selected.length+")"; }
+  else { tgl.style.display=""; addB.style.display="none"; canB.style.display="none"; }
+}
+function resolveItem(pidx,iidx){
+  const it=PLANS[activePlan].meals[pidx].items[iidx];
+  const swapSel=document.querySelector('select[data-info="info-'+pidx+'-'+iidx+'"]');
+  let name=it.name, qty=it.qty;
+  if(swapSel && swapSel.value){ const p=swapSel.value.split("|"); name=p[0]; qty=+p[1]; }
+  return {name,qty};
+}
+function addSelectedItems(){
+  if(!selected.length){alert("Select some foods first.");return;}
+  const picks=selected.map(k=>{const [p,i]=k.split("-").map(Number);return resolveItem(p,i);});
+  askSlot(picks.length+" foods", (mi)=>{
+    picks.forEach(x=>logFood(mi,x.name,x.qty));
+    render();
+    selectMode=false; selected=[]; renderPlan(); updateSelBar();
+  });
+}
+document.getElementById("selToggle").onclick=()=>{selectMode=true;selected=[];renderPlan();updateSelBar();};
+document.getElementById("selCancel").onclick=()=>{selectMode=false;selected=[];renderPlan();updateSelBar();};
+document.getElementById("selAdd").onclick=addSelectedItems;
+function renderPlan(){
+  const PLAN=PLANS[activePlan].meals;
+  const RESTAURANT_MEALS={}; PLAN.forEach(m=>{ if(m.mi===1||m.mi===2) RESTAURANT_MEALS[m.mi]=true; });
+  const wrap=document.getElementById("planMeals"); wrap.innerHTML="";
+  PLAN.forEach((meal,pidx)=>{
+    let ms={cal:0,protein:0,carb:0,fat:0};
+    meal.items.forEach(it=>{const m=macrosFor(it.name,it.qty);ms.cal+=m.cal;ms.protein+=m.protein;ms.carb+=m.carb;ms.fat+=m.fat;});
+    const card=document.createElement("div"); card.className="pmeal";
+    let html=`<div class="pmeal-h"><div class="name">${MEAL_NAMES[meal.mi]}</div>
+      <div class="mac">${r1(ms.cal)} kcal · P${r1(ms.protein)} C${r1(ms.carb)} F${r1(ms.fat)}</div></div>
+      <div class="ptbl">
+        <div class="ptbl-head"><div>Plan</div><div>Replace with</div></div>`;
+    meal.items.forEach((it,iidx)=>{
+      const m=macrosFor(it.name,it.qty);
+      const g=groupOf(it.name);
+      const alts=g?SWAP_GROUPS[g].foods.filter(n=>n!==it.name):[];
+      const isSel=selected.includes(selKey(pidx,iidx));
+      const left=`<div class="pcell left${selectMode?' selectable':''}${isSel?' sel':''}" data-selk="${pidx}-${iidx}">
+          ${selectMode?`<div class="selchk">${isSel?'✓':''}</div>`:''}
+          <div class="fn">${it.name}<small>${unitLabel(it.name,it.qty)}</small></div>
+          <div class="kc">${r1(m.cal)} kcal · P${r1(m.protein)} C${r1(m.carb)} F${r1(m.fat)}</div>
+          ${selectMode?'':`<button class="addbtn" data-addfood="${it.name}|${it.qty}|${pidx}|${iidx}">＋ Add</button>`}
+        </div>`;
+      let right;
+      if(alts.length){
+        const opts=alts.map((an)=>{const aq=matchQty(it.name,it.qty,an);
+          return `<option value="${an}|${aq}">${an} (${unitLabel(an,aq)})</option>`;}).join("");
+        right=`<div class="pcell">
+          <select data-info="info-${pidx}-${iidx}">
+            <option value="">— pick a swap —</option>${opts}
+          </select>
+          <div class="altinfo" id="info-${pidx}-${iidx}">Pick an item to see its amount and macros.</div>
+        </div>`;
+      } else {
+        right=`<div class="pcell"><div class="altinfo">No swap for this item.</div></div>`;
+      }
+      html+=`<div class="prow">${left}${right}</div>`;
+    });
+    html+=`</div>`;
+    if(RESTAURANT_MEALS[meal.mi]){
+      const target=ms.cal;
+      const ranked=MEALS.slice().sort((a,b)=>Math.abs(a.cal-target)-Math.abs(b.cal-target)).slice(0,8);
+      const opts=ranked.map(r=>`<option value="${r.item}|${r.brand}|${r.cal}|${r.protein}|${r.carb}|${r.fat}">${r.item} — ${r.brand} (${r.cal} kcal)</option>`).join("");
+      html+=`<div style="padding:11px 12px;border-top:1px solid var(--line);">
+        <div style="font-size:12px;color:var(--accent2);font-weight:600;margin-bottom:6px;">🍔 If eating out (closest to ${r1(target)} kcal)</div>
+        <select data-rest="rest-${pidx}" style="width:100%;background:var(--bg);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:7px;font-size:12.5px;font-family:inherit;">
+          <option value="">— pick a restaurant meal —</option>${opts}
+        </select>
+        <div class="altinfo" id="rest-${pidx}" style="margin-top:6px;">Pick a restaurant meal to compare it to this meal.</div>
+        <button class="addbtn" data-addrest-from="rest-${pidx}" style="display:none;">＋ Add this restaurant meal</button>
+      </div>`;
+    }
+    card.innerHTML=html; wrap.appendChild(card);
+  });
+  let tot={cal:0,protein:0,carb:0,fat:0};
+  PLAN.forEach(meal=>meal.items.forEach(it=>{const m=macrosFor(it.name,it.qty);tot.cal+=m.cal;tot.protein+=m.protein;tot.carb+=m.carb;tot.fat+=m.fat;}));
+  const foot=document.createElement("div"); foot.className="plan-foot";
+  foot.innerHTML=`<div class="big">${r1(tot.cal)} kcal</div>
+    <div class="lab">Protein ${r1(tot.protein)} · Carb ${r1(tot.carb)} · Fat ${r1(tot.fat)} &nbsp;|&nbsp; Target ${TARGET.cal}/${Math.round(TARGET.protein)}/${TARGET.carb}/${Math.round(TARGET.fat)}</div>`;
+  wrap.appendChild(foot);
+  wrap.querySelectorAll("select[data-info]").forEach(sel=>sel.onchange=()=>{
+    const info=document.getElementById(sel.dataset.info);
+    if(!sel.value){info.textContent="Pick an item to see its amount and macros.";return;}
+    const [name,qty]=sel.value.split("|"); const m=macrosFor(name,+qty);
+    info.innerHTML=`<span class="ac">${name}</span> — ${unitLabel(name,+qty)}<br>${r1(m.cal)} kcal · P ${r1(m.protein)} · C ${r1(m.carb)} · F ${r1(m.fat)}`;
+  });
+  wrap.querySelectorAll("button[data-addfood]").forEach(b=>b.onclick=()=>{
+    const [fixedName,fixedQty,pidx,iidx]=b.dataset.addfood.split("|");
+    const swapSel=document.querySelector(`select[data-info="info-${pidx}-${iidx}"]`);
+    let name=fixedName, qty=+fixedQty;
+    if(swapSel && swapSel.value){ const parts=swapSel.value.split("|"); name=parts[0]; qty=+parts[1]; }
+    addFoodToSlot(name,qty,b);
+  });
+  if(selectMode){
+    wrap.querySelectorAll(".pcell.left.selectable").forEach(cell=>cell.onclick=(e)=>{
+      if(e.target.tagName==="SELECT") return;
+      const k=cell.dataset.selk; const i=selected.indexOf(k);
+      if(i>=0) selected.splice(i,1); else selected.push(k);
+      cell.classList.toggle("sel"); const chk=cell.querySelector(".selchk"); if(chk)chk.textContent=selected.includes(k)?"✓":"";
+      updateSelBar();
+    });
+  }
+  wrap.querySelectorAll("select[data-rest]").forEach(sel=>sel.onchange=()=>{
+    const info=document.getElementById(sel.dataset.rest);
+    const addBtn=wrap.querySelector(`button[data-addrest-from="${sel.dataset.rest}"]`);
+    if(!sel.value){info.textContent="Pick a restaurant meal to compare it to this meal.";if(addBtn)addBtn.style.display="none";return;}
+    const [item,brand,cal,p,c,f]=sel.value.split("|");
+    info.innerHTML=`<span class="ac">${item}</span> · ${brand}<br>${cal} kcal · P ${p} · C ${c} · F ${f} <small>(full serving)</small>`;
+    if(addBtn) addBtn.style.display="";
+  });
+  wrap.querySelectorAll("button[data-addrest-from]").forEach(b=>b.onclick=()=>{
+    const sel=wrap.querySelector(`select[data-rest="${b.dataset.addrestFrom}"]`);
+    if(!sel||!sel.value) return;
+    const [item,brand,cal,p,c,f]=sel.value.split("|");
+    addRestaurantToSlot(item,brand,cal,p,c,f,b);
+  });
+}
+function renderEatingOut(){
+  const wrap=document.getElementById("eatingOut"); wrap.innerHTML="";
+  const brands=[...new Set(MEALS.map(m=>m.brand))];
+  const brandOpts=brands.map(b=>`<option value="${b}">${b}</option>`).join("");
+  wrap.innerHTML=`<div class="pmeal">
+    <div class="pmeal-h"><div class="name">🍔 Eating-out guide</div>
+      <div class="mac">Pick a restaurant, then see its meals & macros. Tap ＋ Add to log one (1 full serving).</div></div>
+    <div style="padding:12px;">
+      <select id="brandPick" style="width:100%;background:var(--bg);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:9px;font-size:13px;font-family:inherit;">
+        <option value="">— pick a restaurant —</option>${brandOpts}
+      </select>
+    </div>
+    <div id="brandItems"></div>
+  </div>`;
+  document.getElementById("brandPick").onchange=function(){
+    const box=document.getElementById("brandItems");
+    if(!this.value){box.innerHTML="";return;}
+    const items=MEALS.filter(m=>m.brand===this.value).sort((a,b)=>(b.protein/b.cal)-(a.protein/a.cal));
+    let rows=items.map((r)=>{
+      const ratio=r.protein/r.cal*100;
+      const col=ratio>=9?"var(--ok)":(ratio>=6?"var(--c)":"var(--over)");
+      return `<div class="prow">
+        <div class="pcell left">
+          <div class="fn">${r.item}</div>
+          <div class="kc">${r.cal} kcal · P${r.protein} C${r.carb} F${r.fat}</div>
+          <button class="addbtn" data-eo="${r.item}|${r.brand}|${r.cal}|${r.protein}|${r.carb}|${r.fat}">＋ Add</button>
+        </div>
+        <div class="pcell"><div class="altinfo"><span style="color:${col};font-weight:700;">${ratio.toFixed(1)}</span> g protein /100 kcal</div></div>
+      </div>`;
+    }).join("");
+    box.innerHTML=`<div class="ptbl"><div class="ptbl-head"><div>Item</div><div>Protein density</div></div>${rows}</div>`;
+    box.querySelectorAll("button[data-eo]").forEach(b=>b.onclick=()=>{
+      const [item,brand,cal,p,c,f]=b.dataset.eo.split("|");
+      addRestaurantToSlot(item,brand,cal,p,c,f,b);
+    });
+  };
+}
+
+/* ---------- STATS, STREAK, WEIGHT ---------- */
+function dayTotals(dateStr){
+  const d=store[dateStr]; let t={cal:0,protein:0,carb:0,fat:0};
+  if(!d) return t;
+  d.forEach(meal=>meal.forEach(it=>{t.cal+=it.cal;t.protein+=it.protein;t.carb+=it.carb;t.fat+=it.fat;}));
+  return t;
+}
+function hitProtein(dateStr){ return dayTotals(dateStr).protein >= (TARGET.protein-0.5); }
+function proteinStreak(){
+  // current run ending today; today counts once hit, but an un-logged today
+  // does NOT reset the streak (it's still in progress)
+  let cur=0, d=todayStr();
+  if(!hitProtein(d)) d=addDays(d,-1);       // skip in-progress today
+  while(hitProtein(d)){ cur++; d=addDays(d,-1); }
+  // best consecutive streak over all logged days
+  const days=Object.keys(store).sort();
+  let best=0,run=0,prev=null;
+  days.forEach(day=>{
+    if(hitProtein(day)){ if(prev && addDays(prev,1)===day) run++; else run=1; best=Math.max(best,run); prev=day; }
+    else { run=0; prev=null; }
+  });
+  return {cur, best:Math.max(best,cur)};
+}
+function loadWeight(){try{return JSON.parse(localStorage.getItem("weight_fahad")||"{}");}catch(e){return {};}}
+function saveWeightStore(w){localStorage.setItem("weight_fahad",JSON.stringify(w));}
+let WEIGHT=loadWeight();
+function loadWMeta(){try{return JSON.parse(localStorage.getItem("wtmeta_fahad")||"{}");}catch(e){return {};}}
+function saveWMeta(m){localStorage.setItem("wtmeta_fahad",JSON.stringify(m));}
+let WMETA=loadWMeta();
+let wtRange="all";
+function renderStats(){
+  // streak
+  const s=proteinStreak();
+  document.getElementById("stStreak").textContent=s.cur;
+  document.getElementById("stBest").textContent=s.best;
+  // weekly bars (last 7 days incl today)
+  const bars=document.getElementById("stBars"); bars.innerHTML="";
+  let vals=[],labels=[];
+  for(let i=6;i>=0;i--){ const dd=addDays(todayStr(),-i); vals.push(dayTotals(dd).cal); labels.push(["Su","Mo","Tu","We","Th","Fr","Sa"][new Date(dd+"T00:00:00").getDay()]); }
+  const maxV=Math.max(TARGET.cal, ...vals, 1);
+  let sum=0,cnt=0;
+  vals.forEach((v,i)=>{
+    if(v>0){sum+=v;cnt++;}
+    const onTarget = v>=TARGET.cal*0.9 && v<=TARGET.cal*1.1;
+    const bcol = v===0 ? "var(--line)" : (onTarget ? "var(--accent)" : "#3a3a42");
+    const hpx=Math.max(4, Math.round(v/maxV*80));
+    const el=document.createElement("div");el.className="b";
+    el.innerHTML='<i style="height:'+hpx+'px;background:'+bcol+'"></i><span>'+labels[i]+'</span>';
+    bars.appendChild(el);
+  });
+  document.getElementById("stAvg").textContent = cnt? ("avg "+r1(sum/cnt)+" kcal · target "+TARGET.cal) : "No days logged yet";
+  // weight
+  renderWeight();
+  renderWorkoutStats();
+}
+function renderWeight(){
+  const body=document.getElementById("wtBody");
+  const hist=document.getElementById("wtHist");
+  if(!body) return;
+  // sync settings inputs
+  const hI=document.getElementById("wtHeight"), gI=document.getElementById("wtGoal");
+  if(hI && document.activeElement!==hI) hI.value=WMETA.height||"";
+  if(gI && document.activeElement!==gI) gI.value=WMETA.goal||"";
+  const wDays=Object.keys(WEIGHT).sort();
+  if(!wDays.length){
+    body.innerHTML='<div style="color:var(--muted);font-size:14px;padding:14px 0;text-align:center;">Log your weight to start tracking 📈</div>';
+    hist.innerHTML="";
+    return;
+  }
+  const start=WEIGHT[wDays[0]], last=WEIGHT[wDays[wDays.length-1]];
+  const goal=parseFloat(WMETA.goal)||null, hcm=parseFloat(WMETA.height)||null;
+  const totChange=last-start;
+  // this-week change
+  const wk=addDays(todayStr(),-7); let ref=null; wDays.forEach(d=>{if(d<=wk)ref=WEIGHT[d];});
+  if(ref===null) ref=start;
+  const wkChange=last-ref;
+  const bmi=hcm?(last/((hcm/100)*(hcm/100))):null;
+  const arrow=n=>n<=0?"▼":"▲", col=n=>n<=0?"var(--ok)":"var(--over)";
+  // progress toward goal
+  let prog="";
+  if(goal!==null){
+    const total=Math.abs(start-goal)||1, done=Math.abs(start-last);
+    let pct=Math.max(0,Math.min(100,(done/total)*100));
+    // if moved wrong direction, show 0
+    const wantDown=goal<start;
+    if((wantDown&&last>start)||(!wantDown&&last<start)) pct=0;
+    prog='<div style="margin-top:12px;"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:5px;"><span>Progress to goal</span><span style="color:var(--accent);font-weight:700;">'+pct.toFixed(0)+'%</span></div><div style="height:9px;background:var(--bg);border-radius:6px;overflow:hidden;"><div style="height:100%;width:'+pct.toFixed(0)+'%;background:linear-gradient(90deg,var(--accent),#ffd97a);border-radius:6px;"></div></div></div>';
+  }
+  // header: start / current / goal
+  const cell=(lbl,val,c)=>'<div style="flex:1;text-align:center;"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">'+lbl+'</div><div style="font-size:19px;font-weight:800;'+(c?'color:'+c+';':'')+'margin-top:2px;">'+val+'</div></div>';
+  let head='<div style="display:flex;gap:8px;margin-top:10px;background:var(--bg);border-radius:12px;padding:12px 6px;">';
+  head+=cell("Start",start.toFixed(1),"");
+  head+=cell("Now",last.toFixed(1),"var(--accent)");
+  head+=cell("Goal",goal!==null?goal.toFixed(1):"—","");
+  head+='</div>';
+  // range toggle
+  const rbtn=(v,t)=>'<button data-wr="'+v+'" style="flex:1;background:'+(wtRange===v?'var(--accent)':'var(--bg)')+';color:'+(wtRange===v?'#111':'var(--muted)')+';border:none;border-radius:8px;padding:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">'+t+'</button>';
+  const toggle='<div style="display:flex;gap:6px;margin-top:12px;">'+rbtn("week","Week")+rbtn("month","Month")+rbtn("all","All")+'</div>';
+  // chart
+  let cutoff="0000-00-00";
+  if(wtRange==="week") cutoff=addDays(todayStr(),-7);
+  else if(wtRange==="month") cutoff=addDays(todayStr(),-30);
+  let cDays=wDays.filter(d=>d>=cutoff);
+  if(cDays.length<2) cDays=wDays.slice(-2); // ensure at least a couple points
+  const chart=weightChart(cDays,goal);
+  // stat tiles
+  const tile=(lbl,val,c)=>'<div style="flex:1;background:var(--bg);border-radius:12px;padding:11px;text-align:center;"><div style="font-size:11px;color:var(--muted);">'+lbl+'</div><div style="font-size:16px;font-weight:800;margin-top:3px;'+(c?'color:'+c+';':'')+'">'+val+'</div></div>';
+  let tiles='<div style="display:flex;gap:8px;margin-top:12px;">';
+  tiles+=tile("Total",(totChange<=0?"":"+")+totChange.toFixed(1)+" kg",col(totChange));
+  tiles+=tile("This week",(wkChange<=0?"":"+")+wkChange.toFixed(1)+" kg",col(wkChange));
+  tiles+=tile("BMI",bmi!==null?bmi.toFixed(1):"—","");
+  tiles+='</div>';
+  body.innerHTML=head+prog+toggle+chart+tiles;
+  body.querySelectorAll("[data-wr]").forEach(b=>b.onclick=()=>{wtRange=b.getAttribute("data-wr");renderWeight();});
+  // history list (most recent first, up to 12)
+  const recent=wDays.slice(-12).reverse();
+  let hh='<div style="margin-top:14px;"><div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">History</div>';
+  recent.forEach(d=>{
+    hh+='<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);">'
+      +'<div style="flex:1;font-size:13px;color:var(--muted);">'+fmtHistDate(d)+'</div>'
+      +'<div style="font-weight:700;font-size:14px;">'+WEIGHT[d].toFixed(1)+' kg</div>'
+      +'<button data-wed="'+d+'" style="background:none;border:none;color:var(--accent);font-size:14px;cursor:pointer;padding:2px 6px;">✏️</button>'
+      +'<button data-wdel="'+d+'" style="background:none;border:none;color:var(--over);font-size:14px;cursor:pointer;padding:2px 6px;">🗑️</button>'
+      +'</div>';
+  });
+  hh+='</div>';
+  hist.innerHTML=hh;
+  hist.querySelectorAll("[data-wed]").forEach(b=>b.onclick=()=>{
+    const d=b.getAttribute("data-wed");
+    const nv=prompt("Edit weight for "+fmtHistDate(d)+" (kg):",WEIGHT[d]);
+    if(nv===null) return;
+    const v=parseFloat(nv); if(!v||v<=0){alert("Enter a valid weight.");return;}
+    WEIGHT[d]=v; saveWeightStore(WEIGHT); renderWeight();
+  });
+  hist.querySelectorAll("[data-wdel]").forEach(b=>b.onclick=()=>{
+    const d=b.getAttribute("data-wdel");
+    if(!confirm("Delete entry for "+fmtHistDate(d)+"?")) return;
+    delete WEIGHT[d]; saveWeightStore(WEIGHT); renderWeight();
+  });
+}
+function fmtHistDate(d){const [y,m,day]=d.split("-").map(Number);const mo=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][m-1];return mo+" "+day+(d===todayStr()?" · Today":"");}
+function weightChart(days,goal){
+  const W=300,H=110,pad=6;
+  if(days.length<2) return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:110px;margin-top:12px;"></svg>';
+  const vals=days.map(d=>WEIGHT[d]);
+  let mn=Math.min(...vals),mx=Math.max(...vals);
+  if(goal!==null){mn=Math.min(mn,goal);mx=Math.max(mx,goal);}
+  let rng=(mx-mn)||1; mn-=rng*0.12; mx+=rng*0.12; rng=(mx-mn)||1;
+  const X=i=>pad+(i/(days.length-1))*(W-pad*2);
+  const Y=v=>H-pad-((v-mn)/rng)*(H-pad*2);
+  const pts=vals.map((v,i)=>X(i).toFixed(1)+","+Y(v).toFixed(1));
+  const line=pts.join(" ");
+  const area=pad+","+(H-pad)+" "+line+" "+(W-pad)+","+(H-pad);
+  let gline="";
+  if(goal!==null){const gy=Y(goal).toFixed(1);gline='<line x1="'+pad+'" y1="'+gy+'" x2="'+(W-pad)+'" y2="'+gy+'" stroke="var(--ok)" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.8"/><text x="'+(W-pad)+'" y="'+(parseFloat(gy)-4)+'" text-anchor="end" fill="var(--ok)" font-size="10">goal</text>';}
+  const dots=vals.map((v,i)=>'<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(v).toFixed(1)+'" r="3" fill="var(--accent)"/>').join("");
+  return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:110px;margin-top:12px;">'
+    +'<defs><linearGradient id="wtg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity="0.28"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>'
+    +'<polygon points="'+area+'" fill="url(#wtg)"/>'
+    +gline
+    +'<polyline points="'+line+'" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'
+    +dots+'</svg>';
+}
+document.getElementById("wtSave").onclick=()=>{
+  const v=parseFloat(document.getElementById("wtInput").value);
+  if(!v||v<=0){alert("Enter your weight in kg.");return;}
+  WEIGHT[curDate]=v; saveWeightStore(WEIGHT);
+  document.getElementById("wtInput").value=""; renderWeight();
+};
+document.getElementById("wtGear").onclick=()=>{
+  const s=document.getElementById("wtSettings");
+  s.style.display=(s.style.display==="none"||!s.style.display)?"flex":"none";
+};
+document.getElementById("wtMetaSave").onclick=()=>{
+  const hv=parseFloat(document.getElementById("wtHeight").value);
+  const gv=parseFloat(document.getElementById("wtGoal").value);
+  if(hv&&hv>0) WMETA.height=hv; else delete WMETA.height;
+  if(gv&&gv>0) WMETA.goal=gv; else delete WMETA.goal;
+  saveWMeta(WMETA);
+  document.getElementById("wtSettings").style.display="none";
+  renderWeight();
+};
+
+
+/* ---------- WORKOUT ---------- */
+function loadWorkout(){try{return JSON.parse(localStorage.getItem("workout_fahad")||"null")||{weeks:[],active:null};}catch(e){return {weeks:[],active:null};}}
+function saveWorkout(){localStorage.setItem("workout_fahad",JSON.stringify(WK));}
+let WK=loadWorkout();
+let wkDayIdx=0;
+function wkSetActiveTab(){const t=document.getElementById("wkDayTabs");if(!t)return;t.querySelectorAll(".wkdtab").forEach((b,i)=>b.classList.toggle("on",i===wkDayIdx));}
+function wkuid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function wkActive(){return WK.weeks.find(w=>w.id===WK.active)||WK.weeks[WK.weeks.length-1]||null;}
+function wkFindDay(wk,id){return wk?wk.days.find(d=>d.id===id):null;}
+function wkFindEx(day,id){return day?day.exercises.find(e=>e.id===id):null;}
+function wkNorm(s){return (s||"").trim().toLowerCase();}
+function exercisePR(name){
+  const key=wkNorm(name); if(!key) return null;
+  let bw=0,br=0;
+  WK.weeks.forEach(w=>w.days.forEach(d=>d.exercises.forEach(e=>{
+    if(wkNorm(e.name)!==key) return;
+    (e.sets||[]).forEach(s=>{const w2=parseFloat(s.w)||0,r2=parseFloat(s.r)||0;
+      if(w2<=0) return;
+      if(w2>bw){bw=w2;br=r2;} else if(w2===bw && r2>br){br=r2;}
+    });
+  })));
+  return bw>0?{w:bw,r:br}:null;
+}
+function wkCopyStructure(src){
+  return src.days.map(d=>({id:wkuid(),name:d.name,exercises:d.exercises.map(e=>({
+    id:wkuid(),name:e.name,targetReps:e.targetReps,sets:(e.sets||[]).map(()=>({w:"",r:""}))
+  }))}));
+}
+function renderWorkout(){
+  const bar=document.getElementById("wkWeekBar");
+  const meta=document.getElementById("wkWeekMeta");
+  const daysEl=document.getElementById("wkDays");
+  const addDay=document.getElementById("wkAddDay");
+  if(!WK.weeks.length){
+    bar.innerHTML=""; meta.innerHTML="";
+    daysEl.innerHTML='<div class="wkempty">No weeks yet 🏋️<br>Tap <b>＋ New week</b> to start, then add your training days and exercises.</div>';
+    addDay.style.display="none"; return;
+  }
+  const act=wkActive(); WK.active=act.id;
+  bar.innerHTML=WK.weeks.map(w=>'<button class="wkchip'+(w.id===act.id?' on':'')+'" data-wksel="'+w.id+'">'+esc(w.name)+'</button>').join("");
+  bar.querySelectorAll("[data-wksel]").forEach(b=>b.onclick=()=>{WK.active=b.getAttribute("data-wksel");wkDayIdx=0;saveWorkout();renderWorkout();});
+  meta.innerHTML='<span style="flex:1;color:var(--muted);font-size:12px;">'+act.days.length+' day'+(act.days.length===1?'':'s')+'</span>'
+    +'<button class="wkmini" data-wkren>✏️ Rename</button><button class="wkmini" data-wkdel style="color:var(--over)">🗑️ Delete week</button>';
+  meta.querySelector("[data-wkren]").onclick=()=>{const n=prompt("Rename week:",act.name);if(n&&n.trim()){act.name=n.trim();saveWorkout();renderWorkout();}};
+  meta.querySelector("[data-wkdel]").onclick=()=>{if(!confirm("Delete \""+act.name+"\" and all its data?"))return;WK.weeks=WK.weeks.filter(w=>w.id!==act.id);WK.active=WK.weeks.length?WK.weeks[WK.weeks.length-1].id:null;saveWorkout();renderWorkout();};
+  // days — horizontal swipe pager
+  const tabsEl=document.getElementById("wkDayTabs");
+  if(!act.days.length){
+    tabsEl.innerHTML="";
+    daysEl.innerHTML='<div class="wkempty" style="min-width:100%;">No days in this week yet.<br>Tap <b>＋ Add day</b> below.</div>';
+  } else {
+    if(wkDayIdx>act.days.length-1) wkDayIdx=act.days.length-1;
+    if(wkDayIdx<0) wkDayIdx=0;
+    tabsEl.innerHTML=act.days.map((d,i)=>'<button class="wkdtab'+(i===wkDayIdx?' on':'')+'" data-wkdtab="'+i+'">'+esc(d.name)+'</button>').join("");
+    daysEl.innerHTML=act.days.map(d=>{
+      const ex=d.exercises.map(e=>{
+        const pr=exercisePR(e.name);
+        const prHtml=pr?'<span class="prbadge">🏆 '+r1x(pr.w)+'kg × '+pr.r+'</span>':'<span class="prbadge" style="opacity:.5">🏆 —</span>';
+        const sets=(e.sets||[]).map((s,i)=>
+          '<div class="setrow"><span class="sidx">Set '+(i+1)+'</span>'
+          +'<input type="number" inputmode="decimal" step="0.5" placeholder="kg" value="'+(s.w!==undefined?s.w:"")+'" data-wkw="'+d.id+'|'+e.id+'|'+i+'">'
+          +'<span class="u">kg</span>'
+          +'<input type="number" inputmode="numeric" step="1" placeholder="reps" value="'+(s.r!==undefined?s.r:"")+'" data-wkr="'+d.id+'|'+e.id+'|'+i+'">'
+          +'<span class="u">reps</span>'
+          +'<button class="srm" data-wksrm="'+d.id+'|'+e.id+'|'+i+'">✕</button></div>'
+        ).join("");
+        return '<div class="excard">'
+          +'<div class="exhead"><div style="flex:1;"><div class="exname">'+esc(e.name)+'</div>'
+          +'<div class="extgt" data-wktgt="'+d.id+'|'+e.id+'">'+((e.sets||[]).length)+' × <u>'+esc(e.targetReps||"—")+'</u> reps · edit</div></div>'
+          +prHtml+'</div>'
+          +sets
+          +'<div class="exact"><button data-wkaddset="'+d.id+'|'+e.id+'">＋ Set</button>'
+          +'<button data-wkexren="'+d.id+'|'+e.id+'">✏️ Rename</button>'
+          +'<button class="exdel" data-wkexdel="'+d.id+'|'+e.id+'">🗑️ Delete</button></div>'
+          +'</div>';
+      }).join("");
+      return '<div class="daypage"><div class="daycard"><div class="dayhead"><div class="dn">'+esc(d.name)+'</div>'
+        +'<div><button class="wkmini" data-wkdren="'+d.id+'">✏️</button><button class="wkmini" data-wkddel="'+d.id+'" style="color:var(--over)">🗑️</button></div></div>'
+        +ex
+        +'<button class="wkmini" style="color:var(--accent);font-weight:800;margin-top:12px;font-size:13px;" data-wkaddex="'+d.id+'">＋ Add exercise</button>'
+        +'</div></div>';
+    }).join("");
+    // tap a day tab -> swipe to it
+    tabsEl.querySelectorAll("[data-wkdtab]").forEach(b=>b.onclick=()=>{const i=+b.getAttribute("data-wkdtab");wkDayIdx=i;daysEl.scrollTo({left:i*daysEl.clientWidth,behavior:"smooth"});wkSetActiveTab();});
+    // swipe updates active tab
+    daysEl.onscroll=()=>{const i=Math.round(daysEl.scrollLeft/(daysEl.clientWidth||1));if(i!==wkDayIdx){wkDayIdx=i;wkSetActiveTab();}};
+    // keep the current day in view across re-renders (e.g. after editing a set)
+    requestAnimationFrame(()=>{daysEl.style.scrollBehavior="auto";daysEl.scrollLeft=wkDayIdx*daysEl.clientWidth;daysEl.style.scrollBehavior="";wkSetActiveTab();});
+  }
+  addDay.style.display="";
+  wkBindDays(act);
+}
+function r1x(n){return (Math.round(n*10)/10).toString();}
+function esc(s){return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function wkBindDays(act){
+  const q=(sel)=>document.querySelectorAll(sel);
+  q("[data-wkw]").forEach(inp=>inp.onchange=()=>{const [dd,ee,i]=inp.getAttribute("data-wkw").split("|");const e=wkFindEx(wkFindDay(act,dd),ee);if(e){e.sets[+i].w=inp.value;saveWorkout();renderWorkout();}});
+  q("[data-wkr]").forEach(inp=>inp.onchange=()=>{const [dd,ee,i]=inp.getAttribute("data-wkr").split("|");const e=wkFindEx(wkFindDay(act,dd),ee);if(e){e.sets[+i].r=inp.value;saveWorkout();renderWorkout();}});
+  q("[data-wksrm]").forEach(b=>b.onclick=()=>{const [dd,ee,i]=b.getAttribute("data-wksrm").split("|");const e=wkFindEx(wkFindDay(act,dd),ee);if(e&&e.sets.length>1){e.sets.splice(+i,1);saveWorkout();renderWorkout();}});
+  q("[data-wkaddset]").forEach(b=>b.onclick=()=>{const [dd,ee]=b.getAttribute("data-wkaddset").split("|");const e=wkFindEx(wkFindDay(act,dd),ee);if(e){e.sets.push({w:"",r:""});saveWorkout();renderWorkout();}});
+  q("[data-wktgt]").forEach(el=>el.onclick=()=>{const [dd,ee]=el.getAttribute("data-wktgt").split("|");const e=wkFindEx(wkFindDay(act,dd),ee);if(e){const n=prompt("Target reps (e.g. 8-10):",e.targetReps||"");if(n!==null){e.targetReps=n.trim();saveWorkout();renderWorkout();}}});
+  q("[data-wkexren]").forEach(b=>b.onclick=()=>{const [dd,ee]=b.getAttribute("data-wkexren").split("|");const e=wkFindEx(wkFindDay(act,dd),ee);if(e){const n=prompt("Rename exercise:",e.name);if(n&&n.trim()){e.name=n.trim();saveWorkout();renderWorkout();}}});
+  q("[data-wkexdel]").forEach(b=>b.onclick=()=>{const [dd,ee]=b.getAttribute("data-wkexdel").split("|");const day=wkFindDay(act,dd);if(day){const e=wkFindEx(day,ee);if(e&&confirm("Delete \""+e.name+"\"?")){day.exercises=day.exercises.filter(x=>x.id!==ee);saveWorkout();renderWorkout();}}});
+  q("[data-wkaddex]").forEach(b=>b.onclick=()=>{const dd=b.getAttribute("data-wkaddex");const day=wkFindDay(act,dd);if(!day)return;const n=prompt("Exercise name:");if(!n||!n.trim())return;const tr=prompt("Target reps (e.g. 8-10):","8-12")||"";day.exercises.push({id:wkuid(),name:n.trim(),targetReps:tr.trim(),sets:[{w:"",r:""},{w:"",r:""},{w:"",r:""}]});saveWorkout();renderWorkout();});
+  q("[data-wkdren]").forEach(b=>b.onclick=()=>{const dd=b.getAttribute("data-wkdren");const day=wkFindDay(act,dd);if(day){const n=prompt("Rename day:",day.name);if(n&&n.trim()){day.name=n.trim();saveWorkout();renderWorkout();}}});
+  q("[data-wkddel]").forEach(b=>b.onclick=()=>{const dd=b.getAttribute("data-wkddel");const day=wkFindDay(act,dd);if(day&&confirm("Delete day \""+day.name+"\"?")){act.days=act.days.filter(x=>x.id!==dd);saveWorkout();renderWorkout();}});
+}
+document.getElementById("wkNewWeek").onclick=()=>{
+  const prev=wkActive();
+  const def="Week "+(WK.weeks.length+1);
+  const name=prompt("Name this week:",def);
+  if(name===null)return;
+  const days=prev?wkCopyStructure(prev):[];
+  const wk={id:wkuid(),name:(name.trim()||def),days};
+  WK.weeks.push(wk);WK.active=wk.id;saveWorkout();renderWorkout();
+};
+document.getElementById("wkAddDay").onclick=()=>{
+  const act=wkActive();if(!act)return;
+  const n=prompt("Day name (e.g. Push, Legs, Day 1):");
+  if(!n||!n.trim())return;
+  act.days.push({id:wkuid(),name:n.trim(),exercises:[]});wkDayIdx=act.days.length-1;saveWorkout();renderWorkout();
+};
+
+function wkWeekStats(week){
+  let days=0,sets=0,vol=0;
+  (week.days||[]).forEach(d=>{
+    let dayLogged=false;
+    (d.exercises||[]).forEach(e=>(e.sets||[]).forEach(s=>{
+      const w=parseFloat(s.w)||0,r=parseFloat(s.r)||0;
+      if(w>0){ sets++; dayLogged=true; if(r>0) vol+=w*r; }
+    }));
+    if(dayLogged) days++;
+  });
+  return {days,sets,vol};
+}
+function bestWInWeek(week,key){let bw=0,br=0;(week.days||[]).forEach(d=>(d.exercises||[]).forEach(e=>{if(wkNorm(e.name)!==key)return;(e.sets||[]).forEach(s=>{const w=parseFloat(s.w)||0,r=parseFloat(s.r)||0;if(w<=0)return;if(w>bw){bw=w;br=r;}else if(w===bw&&r>br)br=r;});}));return bw>0?{w:bw,r:br}:null;}
+function newPRsInWeek(act){
+  const seen={},out=[];
+  (act.days||[]).forEach(d=>(d.exercises||[]).forEach(e=>{
+    const key=wkNorm(e.name); if(!key||seen[key])return; seen[key]=1;
+    const tw=bestWInWeek(act,key); if(!tw)return;
+    let ow=0; WK.weeks.forEach(w=>{if(w.id===act.id)return;const b=bestWInWeek(w,key);if(b&&b.w>ow)ow=b.w;});
+    if(tw.w>ow) out.push({name:e.name,w:tw.w,r:tw.r});
+  }));
+  return out;
+}
+function renderWorkoutStats(){
+  const el=document.getElementById("woStats"); if(!el) return;
+  if(!WK.weeks.length){ el.innerHTML='<div class="ssub" style="margin-top:8px;">Log workouts in the 💪 Workout tab to see your training stats here.</div>'; return; }
+  const act=wkActive();
+  const st=wkWeekStats(act);
+  const idx=WK.weeks.findIndex(w=>w.id===act.id);
+  const prev=idx>0?wkWeekStats(WK.weeks[idx-1]):null;
+  const tile=(lbl,val)=>'<div class="stile"><div class="sbig">'+val+'</div><div class="ssub">'+lbl+'</div></div>';
+  let html='<div class="ssub" style="margin-top:6px;margin-bottom:8px;">'+esc(act.name)+'</div>';
+  html+='<div style="display:flex;gap:10px;">'+tile("days<br>trained",st.days)+tile("sets<br>logged",st.sets)+tile("kg<br>volume",Math.round(st.vol).toLocaleString())+'</div>';
+  // volume trend across all weeks
+  const vols=WK.weeks.map(w=>wkWeekStats(w).vol);
+  const maxVol=Math.max(...vols,1);
+  if(vols.some(v=>v>0)){
+    html+='<div class="ssub" style="margin-top:14px;margin-bottom:2px;">Volume by week (kg)</div><div class="stbars" style="height:82px;">';
+    WK.weeks.forEach((w,i)=>{
+      const v=vols[i], hpx=Math.max(4,Math.round(v/maxVol*64)), isAct=w.id===act.id;
+      html+='<div class="b" title="'+esc(w.name)+': '+Math.round(v).toLocaleString()+' kg"><i style="height:'+hpx+'px;background:'+(v===0?'var(--line)':(isAct?'var(--accent)':'#3a3a42'))+'"></i><span>'+(i+1)+'</span></div>';
+    });
+    html+='</div>';
+  }
+  // new PRs this week
+  const nprs=newPRsInWeek(act);
+  if(nprs.length){
+    html+='<div class="ssub" style="margin-top:14px;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);">🎉 New PRs this week</div>';
+    nprs.forEach(p=>{
+      html+='<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);">'
+        +'<span style="font-size:13px;font-weight:700;">'+esc(p.name)+'</span>'
+        +'<span style="font-weight:800;font-size:13px;color:var(--ok);white-space:nowrap;">'+r1x(p.w)+' kg × '+p.r+' 🔥</span></div>';
+    });
+  }
+  // top PRs across all weeks
+  const seen={},prs=[];
+  WK.weeks.forEach(w=>w.days.forEach(d=>d.exercises.forEach(e=>{
+    const k=wkNorm(e.name); if(!k||seen[k])return; const pr=exercisePR(e.name); if(pr){seen[k]=1;prs.push({name:e.name,w:pr.w,r:pr.r});}
+  })));
+  prs.sort((a,b)=>b.w-a.w);
+  if(prs.length){
+    html+='<div class="ssub" style="margin-top:14px;text-transform:uppercase;letter-spacing:.5px;">🏆 Top PRs</div>';
+    prs.slice(0,5).forEach(p=>{
+      html+='<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);">'
+        +'<span style="font-size:13px;">'+esc(p.name)+'</span>'
+        +'<span style="font-weight:800;font-size:13px;color:var(--accent);white-space:nowrap;">'+r1x(p.w)+' kg × '+p.r+'</span></div>';
+    });
+  }
+  el.innerHTML=html;
+}
+function switchView(v){
+  document.getElementById("logView").style.display=v==="log"?"":"none";
+  document.getElementById("planView").style.display=v==="plan"?"":"none";
+  document.getElementById("statsView").style.display=v==="stats"?"":"none";
+  document.getElementById("moreView").style.display=v==="more"?"":"none";
+  document.getElementById("workoutView").style.display=v==="workout"?"":"none";
+  document.getElementById("tabLog").classList.toggle("on",v==="log");
+  document.getElementById("tabPlan").classList.toggle("on",v==="plan");
+  document.getElementById("tabStats").classList.toggle("on",v==="stats");
+  document.getElementById("tabMore").classList.toggle("on",v==="more");
+  document.getElementById("tabWorkout").classList.toggle("on",v==="workout");
+  if(v==="plan"){ renderPlanPicker(); renderPlan(); renderEatingOut(); }
+  if(v==="stats"){ renderStats(); }
+  if(v==="more"){ renderSupps(); }
+  if(v==="workout"){ renderWorkout(); }
+  window.scrollTo(0,0);
+}
+document.getElementById("tabLog").onclick=()=>switchView("log");
+document.getElementById("tabPlan").onclick=()=>switchView("plan");
+document.getElementById("tabStats").onclick=()=>switchView("stats");
+document.getElementById("tabMore").onclick=()=>switchView("more");
+document.getElementById("tabWorkout").onclick=()=>switchView("workout");
+
+document.getElementById("calTgt").textContent=TARGET.cal;
+document.getElementById("pTgt").textContent=Math.round(TARGET.protein);
+document.getElementById("cTgt").textContent=TARGET.carb;
+document.getElementById("fTgt").textContent=Math.round(TARGET.fat);
+renderWeekStrip();
+render();
+renderSupps();
+
+</script>
+</body>
+</html>
